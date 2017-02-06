@@ -1,5 +1,5 @@
 {
-  "name": "giftbit-cassava",
+  "name": "giftbit-cassava-routes",
   "version": "1.0.0",
   "description": "Private Giftbit routes for use with Cassava.",
   "main": "index.js",
