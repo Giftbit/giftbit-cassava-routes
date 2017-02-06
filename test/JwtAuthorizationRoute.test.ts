@@ -1,12 +1,13 @@
+import * as cassava from "cassava";
 import * as chai from "chai";
-import {JwtAuthorizationRoute, AuthorizationBadge} from "./JwtAuthorizationRoute";
-import {createTestProxyEvent} from "../createTestProxyEvent";
-import {ProxyResponse} from "../ProxyResponse";
+import {createTestProxyEvent} from "./createTestProxyEvent";
+import {JwtAuthorizationRoute} from "../src/jwtauth/JwtAuthorizationRoute";
+import {AuthorizationBadge} from "../src/jwtauth/AuthorizationBadge";
 
 describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in the Authorization header", async() => {
         let secondHandlerCalled = false;
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -30,7 +31,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -47,7 +48,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("verifies a valid JWT in cookies when X-Requested-With is present", async() => {
         let secondHandlerCalled = false;
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -72,7 +73,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -89,7 +90,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("verifies a valid JWT in cookies when x-requested-with header is lower case", async() => {
         let secondHandlerCalled = false;
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -114,7 +115,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -130,7 +131,7 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     it("rejects an expired JWT", async() => {
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -141,7 +142,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -156,7 +157,7 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     it("rejects a JWT with a bad signature in the Authorization header", async() => {
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -167,7 +168,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -182,7 +183,7 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     it("rejects a JWT with a bad signature in cookies", async() => {
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -194,7 +195,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -209,7 +210,7 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     it("rejects a JWT in cookies missing the X-Requested-With header", async() => {
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -220,7 +221,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -235,7 +236,7 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     it("rejects a JWT in cookies with the X-Requested-With header value the wrong case", async() => {
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -247,7 +248,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -262,7 +263,7 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     it("rejects a JWT in cookies missing gb_jwt_session", async() => {
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -274,7 +275,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
@@ -289,7 +290,7 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     it("rejects a JWT in cookies missing gb_jwt_signature", async() => {
-        const router = new marinara.Router();
+        const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
@@ -301,7 +302,7 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const resp = await new Promise<ProxyResponse>((resolve, reject) => {
+        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
             router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
                 if (err) {
                     reject(err);
