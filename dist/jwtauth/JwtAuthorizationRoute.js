@@ -10,9 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const cassava = require("cassava");
 const jwt = require("jsonwebtoken");
 const AuthorizationBadge_1 = require("./AuthorizationBadge");
+const AuthorizationHeader_1 = require("./AuthorizationHeader");
 class JwtAuthorizationRoute {
-    constructor(secret = "secret", jwtOptions) {
-        this.secret = secret;
+    constructor(authBadgePromise, jwtOptions) {
+        this.authBadgePromise = authBadgePromise;
         this.jwtOptions = jwtOptions;
         /**
          * Log errors to console.
@@ -21,14 +22,17 @@ class JwtAuthorizationRoute {
     }
     handle(evt) {
         return __awaiter(this, void 0, void 0, function* () {
+            const secret = yield this.authBadgePromise;
             const token = this.getToken(evt);
             try {
-                const payload = jwt.verify(token, this.secret, this.jwtOptions);
+                const payload = jwt.verify(token, secret.secretkey, this.jwtOptions);
                 const auth = new AuthorizationBadge_1.AuthorizationBadge(payload);
                 if (auth.expirationTime && auth.expirationTime.getTime() < Date.now()) {
                     throw new Error(`jwt expired at ${auth.expirationTime} (and it is currently ${new Date()})`);
                 }
                 evt.meta["auth"] = auth;
+                const header = jwt.decode(token, { complete: true }).header;
+                evt.meta["auth-header"] = new AuthorizationHeader_1.AuthorizationHeader(header);
             }
             catch (e) {
                 this.logErrors && console.error("error verifying jwt", e);
