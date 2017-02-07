@@ -24,8 +24,8 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
                 throw new Error(`jwt expired at ${auth.expirationTime} (and it is currently ${new Date()})`);
             }
             evt.meta["auth"] = auth;
-            const header = jwt.decode(token,{complete: true}).header;
-            evt.meta["auth-header"] = new AuthorizationHeader(header) ;
+            const header = jwt.decode(token, {complete: true}).header;
+            evt.meta["auth-header"] = new AuthorizationHeader(header);
         } catch (e) {
             this.logErrors && console.error("error verifying jwt", e);
             throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);

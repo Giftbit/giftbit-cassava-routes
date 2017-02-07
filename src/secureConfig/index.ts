@@ -1,6 +1,7 @@
 import "babel-polyfill";
-
 import * as aws from "aws-sdk";
+export {AuthenticationBadgeKey} from "./AuthenticationBadgeKey";
+
 const region = process.env["AWS_REGION"] || "";
 
 const creds = new aws.EnvironmentCredentials("AWS");
