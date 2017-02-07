@@ -8,7 +8,7 @@ describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in the Authorization header", async() => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
         router.addCustomRoute({
@@ -49,7 +49,7 @@ describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in cookies when X-Requested-With is present", async() => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
         router.addCustomRoute({
@@ -91,7 +91,7 @@ describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in cookies when x-requested-with header is lower case", async() => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
         router.addCustomRoute({
@@ -132,7 +132,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects an expired JWT", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
 
@@ -158,7 +158,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT with a bad signature in the Authorization header", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
 
@@ -184,7 +184,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT with a bad signature in cookies", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
 
@@ -211,7 +211,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT in cookies missing the X-Requested-With header", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
 
@@ -237,7 +237,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT in cookies with the X-Requested-With header value the wrong case", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
 
@@ -264,7 +264,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT in cookies missing gb_jwt_session", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
 
@@ -291,7 +291,7 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT in cookies missing gb_jwt_signature", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute("secret");
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.addCustomRoute(jwtAuthorizationRoute);
 

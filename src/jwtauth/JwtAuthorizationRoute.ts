@@ -1,6 +1,8 @@
 import * as cassava from "cassava";
 import * as jwt from "jsonwebtoken";
 import {AuthorizationBadge} from "./AuthorizationBadge";
+import {AuthorizationHeader} from "./AuthorizationHeader";
+import {AuthenticationBadgeKey} from "../secureConfig/AuthenticationBadgeKey";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
 
@@ -9,18 +11,21 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
      */
     logErrors = true;
 
-    constructor(private readonly secret: string | Buffer = "secret", private readonly jwtOptions?: jwt.VerifyOptions) {
+    constructor(private readonly authBadgePromise: Promise<AuthenticationBadgeKey>, private readonly jwtOptions?: jwt.VerifyOptions) {
     }
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
+        const secret = await this.authBadgePromise;
         const token = this.getToken(evt);
         try {
-            const payload = jwt.verify(token, this.secret, this.jwtOptions);
+            const payload = jwt.verify(token, secret.secretkey, this.jwtOptions);
             const auth = new AuthorizationBadge(payload);
             if (auth.expirationTime && auth.expirationTime.getTime() < Date.now()) {
                 throw new Error(`jwt expired at ${auth.expirationTime} (and it is currently ${new Date()})`);
             }
             evt.meta["auth"] = auth;
+            const header = jwt.decode(token,{complete: true}).header;
+            evt.meta["auth-header"] = new AuthorizationHeader(header) ;
         } catch (e) {
             this.logErrors && console.error("error verifying jwt", e);
             throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
