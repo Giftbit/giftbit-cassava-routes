@@ -1,2 +1,3 @@
 import * as jwtauth from "./jwtauth";
-export {jwtauth};
+import * as secureConfig from "./secureConfig";
+export {jwtauth, secureConfig};
