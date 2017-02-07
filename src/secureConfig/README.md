@@ -25,18 +25,14 @@ Keep in mind that you will need sufficient permissions to read `s3:secureConfigB
 
 ``` yaml
 Policies:
-  - Version: "2012-10-17"
+  - Version: 2012-10-17
     Statement:
-    - Effect: "Allow"
-      Action:
-        - "s3:GetObject"
-          Resource:
-            -
-              Fn::Sub:
-                "arn:aws:s3:::${SecureConfigBucket}/*"
-            -
-              Fn::Sub:
-                "arn:aws:s3:::${SecureConfigBucket}"
+      - Effect: Allow
+        Action:
+          - s3:GetObject
+        Resource:
+          - !Sub "arn:aws:s3:::${SecureConfigBucket}/*"
+          - !Sub "arn:aws:s3:::${SecureConfigBucket}"
 ```
 
 You will also need the role to be added to the bucket policy, as the bucket policy most likely is denying access by default. 
@@ -44,10 +40,9 @@ You will also need the role to be added to the bucket policy, as the bucket poli
 Last, the role will need read access to the KMS key that goes with the bucket.
 
 ``` yaml
-- Effect: "Allow"
+- Effect: Allow
   Action:
-    - "kms:DescribeKey"
-    - "kms:Decrypt"
-  Resource:
-    !Ref SecureConfigKMSArn
+    - kms:DescribeKey
+    - kms:Decrypt
+  Resource: !Ref SecureConfigKMSArn
 ```
