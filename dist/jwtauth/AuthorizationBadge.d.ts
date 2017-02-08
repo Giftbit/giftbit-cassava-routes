@@ -9,6 +9,7 @@ export declare class AuthorizationBadge {
     issuer: string;
     issuedAtTime: Date;
     expirationTime: Date;
+    uniqueIdentifier: string;
     scopes: string[];
     constructor(jwtPayload?: JwtPayload);
 }
