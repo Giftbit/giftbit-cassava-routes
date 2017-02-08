@@ -14,5 +14,6 @@ export interface JwtPayload {
     iss?: string;
     iat?: string;
     exp?: string;
+    jti?: string;
     scopes?: string[];
 }
