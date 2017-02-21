@@ -15,9 +15,13 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
     }
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
-        const secret = await this.authBadgePromise;
-        const token = this.getToken(evt);
         try {
+            const secret = await this.authBadgePromise;
+            if (!secret) {
+                throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
+            }
+
+            const token = this.getToken(evt);
             const payload = jwt.verify(token, secret.secretkey, this.jwtOptions);
             const auth = new AuthorizationBadge(payload);
             if (auth.expirationTime && auth.expirationTime.getTime() < Date.now()) {

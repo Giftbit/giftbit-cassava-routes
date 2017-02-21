@@ -22,9 +22,12 @@ class JwtAuthorizationRoute {
     }
     handle(evt) {
         return __awaiter(this, void 0, void 0, function* () {
-            const secret = yield this.authBadgePromise;
-            const token = this.getToken(evt);
             try {
+                const secret = yield this.authBadgePromise;
+                if (!secret) {
+                    throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
+                }
+                const token = this.getToken(evt);
                 const payload = jwt.verify(token, secret.secretkey, this.jwtOptions);
                 const auth = new AuthorizationBadge_1.AuthorizationBadge(payload);
                 if (auth.expirationTime && auth.expirationTime.getTime() < Date.now()) {
