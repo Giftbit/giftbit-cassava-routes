@@ -12,6 +12,7 @@ export class AuthorizationBadge {
     issuer: string;
     issuedAtTime: Date;
     expirationTime: Date;
+    uniqueIdentifier: string;
 
     scopes: string[];
 
@@ -28,6 +29,7 @@ export class AuthorizationBadge {
             this.audience = jwtPayload.aud;
             this.issuer = jwtPayload.iss;
             this.scopes = jwtPayload.scopes;
+            this.uniqueIdentifier = jwtPayload.jti;
 
             if (jwtPayload.iat) {
                 this.issuedAtTime = new Date(jwtPayload.iat);
