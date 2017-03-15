@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var AuthorizationBadge_1 = require("./AuthorizationBadge");
 exports.AuthorizationBadge = AuthorizationBadge_1.AuthorizationBadge;
 var AuthorizationHeader_1 = require("./AuthorizationHeader");

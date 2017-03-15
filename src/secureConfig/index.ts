@@ -19,8 +19,8 @@ export async function fetchFromS3<T>(bucket: string, key: string): Promise<T> {
         Key: key
     }).promise()
         .then(s3Object => {
-            return JSON.parse(s3Object.Body.toString())
+            return JSON.parse(s3Object.Body.toString());
         }).catch(error => console.error(`Could not retrieve secureConfig from ${bucket}/${key}`, error));
 
-    return getObject
+    return getObject;
 }

@@ -9,7 +9,7 @@ export interface JwtPayload {
         gri?: string;
         gti?: string;
         gmi?: string;
-    }
+    };
     aud?: string;
     iss?: string;
     iat?: string;
