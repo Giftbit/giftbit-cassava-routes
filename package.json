@@ -1,6 +1,6 @@
 {
   "name": "giftbit-cassava-routes",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Private Giftbit routes for use with Cassava.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/Giftbit/giftbit-cassava#readme",
   "peerDependencies": {
-    "cassava": "^0.0.9",
+    "cassava": "^0.1.0",
     "aws-sdk": "^2.28.0"
   },
   "devDependencies": {
