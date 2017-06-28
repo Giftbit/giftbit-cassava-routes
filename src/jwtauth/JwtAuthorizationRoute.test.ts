@@ -1,8 +1,8 @@
 import * as cassava from "cassava";
 import * as chai from "chai";
 import {createTestProxyEvent} from "./createTestProxyEvent";
-import {JwtAuthorizationRoute} from "../src/jwtauth/JwtAuthorizationRoute";
-import {AuthorizationBadge} from "../src/jwtauth/AuthorizationBadge";
+import {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
+import {AuthorizationBadge} from "./AuthorizationBadge";
 
 describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in the Authorization header", async() => {

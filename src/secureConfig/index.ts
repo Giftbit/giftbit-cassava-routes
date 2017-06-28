@@ -1,6 +1,6 @@
 import "babel-polyfill";
 import * as aws from "aws-sdk";
-export {AuthenticationBadgeKey} from "./AuthenticationBadgeKey";
+export {AuthenticationConfig} from "./AuthenticationConfig";
 
 const region = process.env["AWS_REGION"] || "";
 

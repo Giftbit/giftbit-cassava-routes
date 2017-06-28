@@ -2,7 +2,8 @@ import * as cassava from "cassava";
 import * as jwt from "jsonwebtoken";
 import {AuthorizationBadge} from "./AuthorizationBadge";
 import {AuthorizationHeader} from "./AuthorizationHeader";
-import {AuthenticationBadgeKey} from "../secureConfig/AuthenticationBadgeKey";
+import {AuthenticationConfig} from "../secureConfig/AuthenticationConfig";
+import {RolesConfig} from "../secureConfig/RolesConfig";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
 
@@ -11,24 +12,26 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
      */
     logErrors = true;
 
-    constructor(private readonly authBadgePromise: Promise<AuthenticationBadgeKey>, private readonly jwtOptions?: jwt.VerifyOptions) {
-    }
+    constructor(
+        private readonly authConfigPromise: Promise<AuthenticationConfig>,
+        private readonly rolesConfigPromise?: Promise<RolesConfig>,
+        private readonly jwtOptions?: jwt.VerifyOptions) {}
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
         try {
-            const secret = await this.authBadgePromise;
+            const secret = await this.authConfigPromise;
             if (!secret) {
                 throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
             }
 
             const token = this.getToken(evt);
             const payload = jwt.verify(token, secret.secretkey, this.jwtOptions);
-            const auth = new AuthorizationBadge(payload);
+            const auth = new AuthorizationBadge(payload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
             if (auth.expirationTime && auth.expirationTime.getTime() < Date.now()) {
                 throw new Error(`jwt expired at ${auth.expirationTime} (and it is currently ${new Date()})`);
             }
             evt.meta["auth"] = auth;
-            const header = jwt.decode(token, {complete: true}).header;
+            const header = (jwt.decode(token, {complete: true}) as any).header;
             evt.meta["auth-header"] = new AuthorizationHeader(header);
         } catch (e) {
             this.logErrors && console.error("error verifying jwt", e);
