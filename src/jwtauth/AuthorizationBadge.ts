@@ -1,3 +1,4 @@
+import * as cassava from "cassava";
 import {JwtPayload} from "./JwtPayload";
 import {RolesConfig} from "../secureConfig/RolesConfig";
 
@@ -104,7 +105,7 @@ export class AuthorizationBadge {
         }
 
         const lastSeparatorIx = scope.lastIndexOf(":");
-        if (lastSeparatorIx == -1) {
+        if (lastSeparatorIx === -1) {
             return null;
         }
 
@@ -113,10 +114,26 @@ export class AuthorizationBadge {
 
     isBadgeAuthorized(scope: string): boolean {
         for (; scope; scope = this.getParentScope(scope)) {
-            if (this.effectiveScopes.indexOf(scope) != -1) {
+            if (this.effectiveScopes.indexOf(scope) !== -1) {
                 return true;
             }
         }
         return false;
+    }
+
+    requireScopes(...scopes: string[]): void {
+        for (let scope of scopes) {
+            if (!this.isBadgeAuthorized(scope)) {
+                throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
+            }
+        }
+    }
+
+    requireIds(...ids: ("giftbitUserId" | "merchantId" | "cardId" | "programId" | "recipientId" | "templateId" | "teamMemberId" | "serviceId")[]): void {
+        for (let id of ids) {
+            if (!this[id]) {
+                throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
+            }
+        }
     }
 }
