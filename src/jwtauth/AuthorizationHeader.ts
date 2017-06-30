@@ -1,5 +1,8 @@
 import {JwtHeader} from "./JwtHeader";
 
+/**
+ * Expanded representation of the JWT header.
+ */
 export class AuthorizationHeader {
 
     version: number;

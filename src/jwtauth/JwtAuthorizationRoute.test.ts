@@ -1,8 +1,7 @@
 import * as cassava from "cassava";
 import * as chai from "chai";
-import {createTestProxyEvent} from "./createTestProxyEvent";
-import {JwtAuthorizationRoute} from "../src/jwtauth/JwtAuthorizationRoute";
-import {AuthorizationBadge} from "../src/jwtauth/AuthorizationBadge";
+import {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
+import {AuthorizationBadge} from "./AuthorizationBadge";
 
 describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in the Authorization header", async() => {
@@ -10,8 +9,8 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
-        router.addCustomRoute({
+        router.route(jwtAuthorizationRoute);
+        router.route({
             matches: () => true,
             handle: async evt => {
                 const auth = evt.meta["auth"] as AuthorizationBadge;
@@ -25,21 +24,11 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0.uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
@@ -51,8 +40,8 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
-        router.addCustomRoute({
+        router.route(jwtAuthorizationRoute);
+        router.route({
             matches: () => true,
             handle: async evt => {
                 const auth = evt.meta["auth"] as AuthorizationBadge;
@@ -66,22 +55,12 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po",
                 "X-Requested-With": "XMLHttpRequest"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
@@ -93,8 +72,8 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
-        router.addCustomRoute({
+        router.route(jwtAuthorizationRoute);
+        router.route({
             matches: () => true,
             handle: async evt => {
                 const auth = evt.meta["auth"] as AuthorizationBadge;
@@ -108,22 +87,12 @@ describe("JwtAuthorizationRoute", () => {
             }
         });
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po",
                 "x-requested-with": "XMLHttpRequest"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
@@ -134,23 +103,13 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
+        router.route(jwtAuthorizationRoute);
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsImV4cCI6IjIwMTYtMTItMTJUMjA6MTE6NDAuOTk3KzAwMDAiLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.Wyqsgd_QvLT2bRkK8O6WAPOnC-0deYm6xuwHORzzQWo"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
@@ -160,23 +119,13 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
+        router.route(jwtAuthorizationRoute);
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
@@ -186,24 +135,14 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
+        router.route(jwtAuthorizationRoute);
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                 "X-Requested-With": "XMLHttpRequest"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
@@ -213,23 +152,13 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
+        router.route(jwtAuthorizationRoute);
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
@@ -239,24 +168,14 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
+        router.route(jwtAuthorizationRoute);
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po",
                 "X-Requested-With": "xmlhttprequest"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
@@ -266,24 +185,14 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
+        router.route(jwtAuthorizationRoute);
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Cookie: "gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po",
                 "X-Requested-With": "XMLHttpRequest"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
@@ -293,24 +202,14 @@ describe("JwtAuthorizationRoute", () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
-        router.addCustomRoute(jwtAuthorizationRoute);
+        router.route(jwtAuthorizationRoute);
 
-        const proxyEvent = createTestProxyEvent("/foo/bar", {
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
                 Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0",
                 "X-Requested-With": "XMLHttpRequest"
             }
-        });
-
-        const resp = await new Promise<cassava.ProxyResponse>((resolve, reject) => {
-            router.getLambdaHandler()(proxyEvent, {} as any, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+        }));
 
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));

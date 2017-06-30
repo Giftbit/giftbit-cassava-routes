@@ -1,3 +1,3 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-//# sourceMappingURL=AuthenticationBadgeKey.js.map
+//# sourceMappingURL=AuthenticationConfig.js.map

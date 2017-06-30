@@ -1,6 +1,6 @@
 /**
  * Terse representation of the AuthorizationBadge stored in
- * the JWT payload.
+ * the JWT payload.  We control this part.
  */
 export interface JwtPayload {
     g?: {
@@ -9,11 +9,15 @@ export interface JwtPayload {
         gri?: string;
         gti?: string;
         gmi?: string;
+        pid?: string;
+        si?: string;
+        tmi?: string;
     };
     aud?: string;
     iss?: string;
-    iat?: string;
-    exp?: string;
+    iat?: string | number;
+    exp?: string | number;
     jti?: string;
+    roles?: string[];
     scopes?: string[];
 }
