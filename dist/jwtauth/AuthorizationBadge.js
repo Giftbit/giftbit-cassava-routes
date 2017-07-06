@@ -25,11 +25,14 @@ class AuthorizationBadge {
             this.roles = jwtPayload.roles || [];
             this.scopes = jwtPayload.scopes || [];
             this.uniqueIdentifier = jwtPayload.jti;
-            if (jwtPayload.iat) {
+            if (typeof jwtPayload.iat === "number") {
+                this.issuedAtTime = new Date(jwtPayload.iat * 1000);
+            }
+            else if (typeof jwtPayload.iat === "string") {
                 this.issuedAtTime = new Date(jwtPayload.iat);
             }
-            if (jwtPayload.exp) {
-                this.expirationTime = new Date(jwtPayload.exp);
+            if (typeof jwtPayload.exp === "number") {
+                this.issuedAtTime = new Date(jwtPayload.exp * 1000);
             }
         }
         this.effectiveScopes = this.getEffectiveScopes(rolesConfig);

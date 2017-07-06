@@ -4,6 +4,12 @@ import {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
 import {AuthorizationBadge} from "./AuthorizationBadge";
 
 describe("JwtAuthorizationRoute", () => {
+
+    const happyRoute: cassava.routes.Route = {
+        matches: () => true,
+        handle: async evt => ({body: {}})
+    };
+
     it("verifies a valid JWT in the Authorization header", async() => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
@@ -18,7 +24,7 @@ describe("JwtAuthorizationRoute", () => {
                 chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                 chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
                 chai.assert.instanceOf(auth.issuedAtTime, Date);
-                chai.assert.equal(auth.issuedAtTime.getTime(), new Date("2016-12-12T20:11:40.997+0000").getTime());
+                chai.assert.equal(auth.issuedAtTime.getTime(), new Date("2016-12-12T20:11:40.000+0000").getTime());
                 secondHandlerCalled = true;
                 return {body: {}};
             }
@@ -26,7 +32,7 @@ describe("JwtAuthorizationRoute", () => {
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0.uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po"
+                Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY"
             }
         }));
 
@@ -39,7 +45,6 @@ describe("JwtAuthorizationRoute", () => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
-        jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
         router.route({
             matches: () => true,
@@ -49,7 +54,7 @@ describe("JwtAuthorizationRoute", () => {
                 chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                 chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
                 chai.assert.instanceOf(auth.issuedAtTime, Date);
-                chai.assert.equal(auth.issuedAtTime.getTime(), new Date("2016-12-12T20:11:40.997+0000").getTime());
+                chai.assert.equal(auth.issuedAtTime.getTime(), new Date("2016-12-12T20:11:40.000+0000").getTime());
                 secondHandlerCalled = true;
                 return {body: {}};
             }
@@ -57,7 +62,7 @@ describe("JwtAuthorizationRoute", () => {
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po",
+                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19; gb_jwt_signature=15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY",
                 "X-Requested-With": "XMLHttpRequest"
             }
         }));
@@ -81,7 +86,7 @@ describe("JwtAuthorizationRoute", () => {
                 chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                 chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
                 chai.assert.instanceOf(auth.issuedAtTime, Date);
-                chai.assert.equal(auth.issuedAtTime.getTime(), new Date("2016-12-12T20:11:40.997+0000").getTime());
+                chai.assert.equal(auth.issuedAtTime.getTime(), new Date("2016-12-12T20:11:40.000+0000").getTime());
                 secondHandlerCalled = true;
                 return {body: {}};
             }
@@ -89,7 +94,7 @@ describe("JwtAuthorizationRoute", () => {
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po",
+                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19; gb_jwt_signature=15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY",
                 "x-requested-with": "XMLHttpRequest"
             }
         }));
@@ -99,26 +104,58 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.isTrue(secondHandlerCalled);
     });
 
-    it("verifies a JWT with date strings", async() => {
+    it("verifies a JWT with a date string iat", async() => {
         // The spec calls for timestamps but we were issuing JWTs with date strings for a while.
         // We'll still accept these technically-wrong JWTs.
 
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
-        jwtAuthorizationRoute.logErrors = false;
+        // jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
-        router.route({
-            matches: () => true,
-            handle: async evt => ({body: {}})
-        });
+        router.route(happyRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Authorization: "Bearer eyJ2ZXIiOjMsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItZjJmZTU3ZTg2ZjQyNDc5ZTg5YzYwMzRmZTg0NGJmM2UtVEVTVCIsImdtaSI6InVzZXItZjJmZTU3ZTg2ZjQyNDc5ZTg5YzYwMzRmZTg0NGJmM2UtVEVTVCJ9LCJpYXQiOiIyMDE3LTA3LTA1VDIyOjQ5OjU5LjcxMiswMDAwIiwiZXhwIjoiMjIxNy0wNy0wNVQyMzo0OTo1OS43MTIrMDAwMCIsImp0aSI6ImJhZGdlLTMzZTQ1N2E2NDQ0ZTQ2YjY5MzU3YjkyMDMyM2ZjYWY2IiwicGFyZW50SnRpIjoiYmFkZ2UtYmMyM2IyYmQxMmIwNDJiYTk1ZTQyMzJiODBhZTNhYWIiLCJzY29wZXMiOlsiQyIsIkNFQyIsIkNFUiIsImxpZ2h0cmFpbFYxOmNhcmRTZWFyY2giXSwicm9sZXMiOltdfQ.ydBnIZXP_i7dhsIAQ-ajWltPX1uweLcMixkfaBEDCK4"
+                Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC4wMDBaIiwic2NvcGVzIjpbIkMiLCJUIiwiUiIsIkNFQyIsIkNFUiIsIlVBIiwiRiJdfQ.p2w1R5kBfh6PAzkMWulvf-6Y8BhZx9o5gBOlc8rNlOk"
             }
         }));
 
         chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+    });
+
+    it("verifies a JWT with a timestamp exp", async() => {
+        const router = new cassava.Router();
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
+        jwtAuthorizationRoute.logErrors = false;
+        router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
+
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+            headers: {
+                Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJleHAiOjc3OTI5MjA3MDAsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0.ceQB7hGWyL_iRqWYobPz8Uv3i8MkqO2ay_-x66Q3bk0"
+            }
+        }));
+
+        chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+    });
+
+    it("rejects a JWT with a date string exp", async() => {
+        // We won't be permissive about JWTs with date string expiration because they were
+        // never issued in practice.
+
+        const router = new cassava.Router();
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
+        jwtAuthorizationRoute.logErrors = false;
+        router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
+
+        const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+            headers: {
+                Authorization: "Bearer eyJ2ZXIiOjMsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC4wMDBaIiwiZXhwIjoiMjAxNi0xMi0xMlQyMDoxMTo0MC4wMDBaIiwic2NvcGVzIjpbIkMiLCJUIiwiUiIsIkNFQyIsIkNFUiIsIlVBIiwiRiJdfQ.ZvsuOl3vmAFtZ4TTyeXVWVk9dt2OJn-a-s0oQ-zM2MY"
+            }
+        }));
+
+        chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
     it("rejects an Authorization header missing 'Bearer '", async() => {
@@ -126,10 +163,11 @@ describe("JwtAuthorizationRoute", () => {
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Authorization: "eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0.uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po"
+                Authorization: "eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY"
             }
         }));
 
@@ -142,6 +180,7 @@ describe("JwtAuthorizationRoute", () => {
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
@@ -161,7 +200,7 @@ describe("JwtAuthorizationRoute", () => {
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsImV4cCI6IjIwMTYtMTItMTJUMjA6MTE6NDAuOTk3KzAwMDAiLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.Wyqsgd_QvLT2bRkK8O6WAPOnC-0deYm6xuwHORzzQWo"
+                Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJleHAiOjE0ODE1NzM1MDAsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0.zuwm1-TTXp6b3X7TG-mJun4YSyRut1sJTpxH5q6NJzQ"
             }
         }));
 
@@ -174,10 +213,11 @@ describe("JwtAuthorizationRoute", () => {
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
             }
         }));
 
@@ -193,7 +233,7 @@ describe("JwtAuthorizationRoute", () => {
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19; gb_jwt_signature=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                 "X-Requested-With": "XMLHttpRequest"
             }
         }));
@@ -207,10 +247,11 @@ describe("JwtAuthorizationRoute", () => {
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po"
+                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19; gb_jwt_signature=15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY"
             }
         }));
 
@@ -223,10 +264,11 @@ describe("JwtAuthorizationRoute", () => {
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0; gb_jwt_signature=uZxYrUPqwJk5oTTtDWaPOYzhRSt5dzRS4OZGYP8u2Po",
+                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19; gb_jwt_signature=15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY",
                 "X-Requested-With": "xmlhttprequest"
             }
         }));
@@ -257,10 +299,11 @@ describe("JwtAuthorizationRoute", () => {
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC45OTcrMDAwMCIsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0",
+                Cookie: "gb_jwt_session=eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19",
                 "X-Requested-With": "XMLHttpRequest"
             }
         }));
@@ -274,10 +317,11 @@ describe("JwtAuthorizationRoute", () => {
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
         jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
+        router.route(happyRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Authorization: "Bearer eyJ2ZXIiOjMsInZhdiI6MSwiYWxnIjoibm9uZSIsInR5cCI6IkpXVCJ9.eyJnIjp7Imd1aSI6InVzZXItZjJmZTU3ZTg2ZjQyNDc5ZTg5YzYwMzRmZTg0NGJmM2UtVEVTVCIsImdtaSI6InVzZXItZjJmZTU3ZTg2ZjQyNDc5ZTg5YzYwMzRmZTg0NGJmM2UtVEVTVCJ9LCJqdGkiOiJiYWRnZS0zM2U0NTdhNjQ0NGU0NmI2OTM1N2I5MjAzMjNmY2FmNiIsInNjb3BlcyI6WyJDIiwiQ0VDIiwiQ0VSIl0sInJvbGVzIjpbXX0.tFWA2jK8E0QVaG45h1BeARQQZxNJHVhIDh4-fs2qxhg"
+                Authorization: "Bearer eyJ2ZXIiOjMsInZhdiI6MSwiYWxnIjoibm9uZSIsInR5cCI6IkpXVCJ9.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.tFWA2jK8E0QVaG45h1BeARQQZxNJHVhIDh4-fs2qxhg"
             }
         }));
 

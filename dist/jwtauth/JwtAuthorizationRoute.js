@@ -31,12 +31,8 @@ class JwtAuthorizationRoute {
                 // Expiration time is checked manually because we issued JWTs with date string expirations,
                 // which is against the spec and the library rightly rejects those.
                 const token = this.getToken(evt);
-                const payload = jwt.verify(token, secret.secretkey, { ignoreExpiration: true, algorithms: ["HS256"] });
-                const auth = new AuthorizationBadge_1.AuthorizationBadge(payload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
-                if (auth.expirationTime && auth.expirationTime.getTime() < Date.now()) {
-                    throw new Error(`jwt expired at ${auth.expirationTime} (and it is currently ${new Date()})`);
-                }
-                evt.meta["auth"] = auth;
+                const payload = jwt.verify(token, secret.secretkey, { ignoreExpiration: false, algorithms: ["HS256"] });
+                evt.meta["auth"] = new AuthorizationBadge_1.AuthorizationBadge(payload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
                 const header = jwt.decode(token, { complete: true }).header;
                 evt.meta["auth-header"] = new AuthorizationHeader_1.AuthorizationHeader(header);
             }
