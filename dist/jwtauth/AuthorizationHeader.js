@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Expanded representation of the JWT header.
+ */
 class AuthorizationHeader {
     constructor(jwtHeader) {
         if (jwtHeader) {

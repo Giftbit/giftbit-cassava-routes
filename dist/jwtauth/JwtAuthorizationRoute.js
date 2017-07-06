@@ -13,9 +13,9 @@ const jwt = require("jsonwebtoken");
 const AuthorizationBadge_1 = require("./AuthorizationBadge");
 const AuthorizationHeader_1 = require("./AuthorizationHeader");
 class JwtAuthorizationRoute {
-    constructor(authBadgePromise, jwtOptions) {
-        this.authBadgePromise = authBadgePromise;
-        this.jwtOptions = jwtOptions;
+    constructor(authConfigPromise, rolesConfigPromise) {
+        this.authConfigPromise = authConfigPromise;
+        this.rolesConfigPromise = rolesConfigPromise;
         /**
          * Log errors to console.
          */
@@ -24,13 +24,15 @@ class JwtAuthorizationRoute {
     handle(evt) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const secret = yield this.authBadgePromise;
+                const secret = yield this.authConfigPromise;
                 if (!secret) {
                     throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
                 }
+                // Expiration time is checked manually because we issued JWTs with date string expirations,
+                // which is against the spec and the library rightly rejects those.
                 const token = this.getToken(evt);
-                const payload = jwt.verify(token, secret.secretkey, this.jwtOptions);
-                const auth = new AuthorizationBadge_1.AuthorizationBadge(payload);
+                const payload = jwt.verify(token, secret.secretkey, { ignoreExpiration: true, algorithms: ["HS256"] });
+                const auth = new AuthorizationBadge_1.AuthorizationBadge(payload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
                 if (auth.expirationTime && auth.expirationTime.getTime() < Date.now()) {
                     throw new Error(`jwt expired at ${auth.expirationTime} (and it is currently ${new Date()})`);
                 }
@@ -47,7 +49,7 @@ class JwtAuthorizationRoute {
     }
     postProcess(evt, resp) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (evt.headersLowerCase["x-requested-with"] === "XMLHttpRequest" && evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
+            if (evt.getHeader("X-Requested-With") === "XMLHttpRequest" && evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
                 if (!resp.cookies) {
                     resp.cookies = {};
                 }
@@ -69,7 +71,7 @@ class JwtAuthorizationRoute {
         return true;
     }
     getToken(evt) {
-        const authorization = evt.headersLowerCase["authorization"];
+        const authorization = evt.getHeader("Authorization");
         if (authorization) {
             if (/^Bearer /.test(authorization)) {
                 return authorization.substring(7);
@@ -77,7 +79,7 @@ class JwtAuthorizationRoute {
             this.logErrors && console.log(`authorization header doesn't start with 'Bearer ': ${authorization}`);
             throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
         }
-        if (evt.headersLowerCase["x-requested-with"] === "XMLHttpRequest" && evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
+        if (evt.getHeader("X-Requested-With") === "XMLHttpRequest" && evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
             return `${evt.cookies["gb_jwt_session"]}.${evt.cookies["gb_jwt_signature"]}`;
         }
         this.logErrors && console.log(`request doesn't have Authorization header or X-Requested-With header (${authorization}) with Cookies gb_jwt_session (${evt.cookies["gb_jwt_session"]}) and gb_jwt_signature (${evt.cookies["gb_jwt_signature"]})`);
