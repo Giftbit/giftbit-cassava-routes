@@ -14,8 +14,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
     constructor(
         private readonly authConfigPromise: Promise<AuthenticationConfig>,
-        private readonly rolesConfigPromise?: Promise<RolesConfig>,
-        private readonly jwtOptions?: jwt.VerifyOptions) {}
+        private readonly rolesConfigPromise?: Promise<RolesConfig>) {}
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
         try {
@@ -24,8 +23,10 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
                 throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
             }
 
+            // Expiration time is checked manually because we issued JWTs with date string expirations,
+            // which is against the spec and the library rightly rejects those.
             const token = this.getToken(evt);
-            const payload = jwt.verify(token, secret.secretkey, this.jwtOptions);
+            const payload = jwt.verify(token, secret.secretkey, {ignoreExpiration: true, algorithms: ["HS256"]});
             const auth = new AuthorizationBadge(payload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
             if (auth.expirationTime && auth.expirationTime.getTime() < Date.now()) {
                 throw new Error(`jwt expired at ${auth.expirationTime} (and it is currently ${new Date()})`);
