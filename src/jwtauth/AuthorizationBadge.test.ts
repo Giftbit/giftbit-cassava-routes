@@ -1,5 +1,6 @@
 import * as chai from "chai";
 import {AuthorizationBadge} from "./AuthorizationBadge";
+import {JwtPayload} from "./JwtPayload";
 
 describe("AuthorizationBadge", () => {
     describe("effectiveScopes", () => {
@@ -219,6 +220,34 @@ describe("AuthorizationBadge", () => {
             chai.assert.isFalse(badge.isBadgeAuthorized("drawdown"));
             chai.assert.isFalse(badge.isBadgeAuthorized("lightrailV1:foo:create:drawdown"));
             chai.assert.isFalse(badge.isBadgeAuthorized("lightrailV1:foo:create:baz"));
+        });
+    });
+
+    describe("getJwtPayload()", () => {
+        it("returns the same value the badge was constructed with", () => {
+            const jwt: Partial<JwtPayload> = {
+                "g": {
+                    "gui": "user-7052210bcb94448b825ffa68508d29ad-TEST",
+                    "gmi": "user-7052210bcb94448b825ffa68508d29ad-TEST"
+                },
+                "iat": 1488911646.603,
+                "jti": "badge-dd95b9b582e840ecba1cbf41365d57e1",
+                "scopes": [
+                    "C",
+                    "T",
+                    "R",
+                    "CEC",
+                    "CER",
+                    "UA",
+                    "F"
+                ]
+            };
+
+            const auth = new AuthorizationBadge(jwt);
+            const newJwt = auth.getJwtPayload();
+
+            // Stringify and parse to remove undefineds.
+            chai.assert.deepEqual(JSON.parse(JSON.stringify(newJwt)), jwt);
         });
     });
 });
