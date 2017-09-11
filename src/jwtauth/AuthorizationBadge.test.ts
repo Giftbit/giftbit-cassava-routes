@@ -1,4 +1,5 @@
 import * as chai from "chai";
+import * as jwt from "jsonwebtoken";
 import {AuthorizationBadge} from "./AuthorizationBadge";
 import {JwtPayload} from "./JwtPayload";
 
@@ -247,7 +248,105 @@ describe("AuthorizationBadge", () => {
             const newJwt = auth.getJwtPayload();
 
             // Stringify and parse to remove undefineds.
+            chai.assert.notEqual(newJwt, jwt);
             chai.assert.deepEqual(JSON.parse(JSON.stringify(newJwt)), jwt);
+        });
+
+        it("does not mix effective scopes into scopes", () => {
+            const jwt: Partial<JwtPayload> = {
+                "g": {
+                    "gui": "user-7052210bcb94448b825ffa68508d29ad-TEST",
+                    "gmi": "user-7052210bcb94448b825ffa68508d29ad-TEST"
+                },
+                "iat": 1488911646.603,
+                "jti": "badge-dd95b9b582e840ecba1cbf41365d57e1",
+                "scopes": [
+                    "C",
+                    "T",
+                    "R",
+                    "CEC",
+                    "CER",
+                    "UA",
+                    "F",
+                    "wildwest:okcorral:whisky:sipping",
+                ],
+                roles: [
+                    "DocHoliday",
+                    "VirgilEarp"
+                ]
+            };
+            const rolesConfig = {
+                roles: [
+                    {
+                        name: "DocHoliday",
+                        description: "",
+                        scopes: [
+                            "wildwest:okcorral:gunfighter",
+                            "wildwest:okcorral:dentist",
+                            "wildwest:okcorral:gambler",
+                            "wildwest:okcorral:law:deputy:temp"
+                        ]
+                    },
+                    {
+                        name: "WyattEarp",
+                        description: "",
+                        scopes: [
+                            "wildwest:okcorral:gambler",
+                            "wildwest:okcorral:law:deputy"
+                        ]
+                    },
+                    {
+                        name: "VirgilEarp",
+                        description: "",
+                        scopes: [
+                            "wildwest:okcorral:law"
+                        ]
+                    }
+                ]
+            };
+
+            const auth = new AuthorizationBadge(jwt, rolesConfig);
+            const newJwt = auth.getJwtPayload();
+
+            // Stringify and parse to remove undefineds.
+            chai.assert.notEqual(newJwt, jwt);
+            chai.assert.deepEqual(JSON.parse(JSON.stringify(newJwt)), jwt);
+        });
+    });
+
+    describe("sign()", () => {
+        it("returns the same jwt that was decoded", () => {
+            const originalHeader = {
+                "ver": 2,
+                "vav": 1,
+                "alg": "HS256",
+                "typ": "JWT"
+            };
+            const originalPayload = {
+                "g": {
+                    "gui": "user-7052210bcb94448b825ffa68508d29ad-TEST",
+                    "gmi": "user-7052210bcb94448b825ffa68508d29ad-TEST"
+                },
+                "iat": 1488911646.603,
+                "jti": "badge-dd95b9b582e840ecba1cbf41365d57e1",
+                "scopes": [
+                    "C",
+                    "T",
+                    "R",
+                    "CEC",
+                    "CER",
+                    "UA",
+                    "F"
+                ]
+            };
+
+            const auth = new AuthorizationBadge(originalPayload);
+            const newToken = auth.sign("secret");
+            const newHeader = (jwt.decode(newToken, {complete: true}) as any).header;
+            const newPayload = jwt.verify(newToken, "secret", {ignoreExpiration: true, algorithms: ["HS256"]});
+
+            chai.assert.deepEqual(originalPayload, newPayload);
+            chai.assert.deepEqual(originalHeader, newHeader);
         });
     });
 });

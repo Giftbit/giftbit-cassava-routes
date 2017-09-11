@@ -1,4 +1,5 @@
 import * as cassava from "cassava";
+import * as jwt from "jsonwebtoken";
 import {JwtPayload} from "./JwtPayload";
 import {RolesConfig} from "../secureConfig/RolesConfig";
 
@@ -79,6 +80,16 @@ export class AuthorizationBadge {
             iat: this.issuedAtTime ? this.issuedAtTime.getTime() / 1000 : undefined,
             exp: this.expirationTime ? this.expirationTime.getTime() / 1000 : undefined
         };
+    }
+
+    sign(secret: string): string {
+        return jwt.sign(this.getJwtPayload(), secret, {
+            algorithm: "HS256",
+            header: {
+                ver: 2,
+                vav: 1
+            }
+        });
     }
 
     requireIds(...ids: ("giftbitUserId" | "merchantId" | "cardId" | "programId" | "recipientId" | "templateId" | "teamMemberId" | "serviceId")[]): void {
