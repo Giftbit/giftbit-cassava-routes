@@ -247,9 +247,33 @@ describe("AuthorizationBadge", () => {
             const auth = new AuthorizationBadge(jwt);
             const newJwt = auth.getJwtPayload();
 
-            // Stringify and parse to remove undefineds.
             chai.assert.notEqual(newJwt, jwt);
-            chai.assert.deepEqual(JSON.parse(JSON.stringify(newJwt)), jwt);
+            chai.assert.deepEqual(newJwt, jwt);
+        });
+
+        it("returns a number iat even when constructed with a string date iat", () => {
+            const jwt: Partial<JwtPayload> = {
+                "g": {
+                    "gui": "user-7052210bcb94448b825ffa68508d29ad-TEST",
+                    "gmi": "user-7052210bcb94448b825ffa68508d29ad-TEST"
+                },
+                "iat": "2017-03-07T18:34:06.603Z",
+                "jti": "badge-dd95b9b582e840ecba1cbf41365d57e1",
+                "scopes": [
+                    "C",
+                    "T",
+                    "R",
+                    "CEC",
+                    "CER",
+                    "UA",
+                    "F"
+                ]
+            };
+
+            const auth = new AuthorizationBadge(jwt);
+            const newJwt = auth.getJwtPayload();
+
+            chai.assert.equal(newJwt.iat, 1488911646.603);
         });
 
         it("does not mix effective scopes into scopes", () => {
@@ -308,9 +332,8 @@ describe("AuthorizationBadge", () => {
             const auth = new AuthorizationBadge(jwt, rolesConfig);
             const newJwt = auth.getJwtPayload();
 
-            // Stringify and parse to remove undefineds.
             chai.assert.notEqual(newJwt, jwt);
-            chai.assert.deepEqual(JSON.parse(JSON.stringify(newJwt)), jwt);
+            chai.assert.deepEqual(newJwt, jwt);
         });
     });
 
@@ -343,7 +366,7 @@ describe("AuthorizationBadge", () => {
             const auth = new AuthorizationBadge(originalPayload);
             const newToken = auth.sign("secret");
             const newHeader = (jwt.decode(newToken, {complete: true}) as any).header;
-            const newPayload = jwt.verify(newToken, "secret", {ignoreExpiration: true, algorithms: ["HS256"]});
+            const newPayload = jwt.verify(newToken, "secret", {algorithms: ["HS256"]});
 
             chai.assert.deepEqual(originalPayload, newPayload);
             chai.assert.deepEqual(originalHeader, newHeader);

@@ -39,25 +39,55 @@ class AuthorizationBadge {
         this.effectiveScopes = this.getEffectiveScopes(rolesConfig);
     }
     getJwtPayload() {
-        return {
-            g: {
-                gui: this.giftbitUserId,
-                gci: this.cardId,
-                gri: this.recipientId,
-                gti: this.templateId,
-                gmi: this.merchantId,
-                pid: this.programId,
-                tmi: this.teamMemberId,
-                si: this.serviceId
-            },
-            aud: this.audience,
-            iss: this.issuer,
-            roles: this.roles.length ? this.roles : undefined,
-            scopes: this.scopes.length ? this.scopes : undefined,
-            jti: this.uniqueIdentifier,
-            iat: this.issuedAtTime ? this.issuedAtTime.getTime() / 1000 : undefined,
-            exp: this.expirationTime ? this.expirationTime.getTime() / 1000 : undefined
+        const payload = {
+            g: {}
         };
+        if (this.giftbitUserId) {
+            payload.g.gui = this.giftbitUserId;
+        }
+        if (this.cardId) {
+            payload.g.gci = this.cardId;
+        }
+        if (this.recipientId) {
+            payload.g.gri = this.recipientId;
+        }
+        if (this.templateId) {
+            payload.g.gti = this.templateId;
+        }
+        if (this.merchantId) {
+            payload.g.gmi = this.merchantId;
+        }
+        if (this.programId) {
+            payload.g.pid = this.programId;
+        }
+        if (this.teamMemberId) {
+            payload.g.tmi = this.teamMemberId;
+        }
+        if (this.serviceId) {
+            payload.g.si = this.serviceId;
+        }
+        if (this.audience) {
+            payload.aud = this.audience;
+        }
+        if (this.issuer) {
+            payload.iss = this.issuer;
+        }
+        if (this.roles.length) {
+            payload.roles = this.roles;
+        }
+        if (this.scopes.length) {
+            payload.scopes = this.scopes;
+        }
+        if (this.uniqueIdentifier) {
+            payload.jti = this.uniqueIdentifier;
+        }
+        if (this.issuedAtTime) {
+            payload.iat = this.issuedAtTime.getTime() / 1000;
+        }
+        if (this.expirationTime) {
+            payload.exp = this.expirationTime.getTime();
+        }
+        return payload;
     }
     sign(secret) {
         return jwt.sign(this.getJwtPayload(), secret, {
