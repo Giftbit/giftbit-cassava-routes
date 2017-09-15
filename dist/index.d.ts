@@ -1,3 +1,4 @@
 import * as jwtauth from "./jwtauth";
 import * as secureConfig from "./secureConfig";
-export { jwtauth, secureConfig };
+import { HealthCheckRoute } from "./HealthCheckRoute";
+export { jwtauth, secureConfig, HealthCheckRoute };
