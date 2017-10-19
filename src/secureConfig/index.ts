@@ -26,12 +26,15 @@ export async function fetchFromS3<T>(bucket: string, key: string): Promise<T> {
     }
 }
 
-export async function fetchFromS3ByEnvVar<T>(bucket: string, envVar: string): Promise<T> {
-    if (!process || !process.env[envVar]) {
-        console.error(`${envVar} is not set.  The secure config item cannot be fetched.`);
+export async function fetchFromS3ByEnvVar<T>(bucketEnvVar: string, keyEnvVar: string): Promise<T> {
+    if (!process || !process.env[bucketEnvVar]) {
+        console.error(`${bucketEnvVar} is not set.  The secure config item cannot be fetched.`);
+        return null;
+    }
+    if (!process || !process.env[keyEnvVar]) {
+        console.error(`${keyEnvVar} is not set.  The secure config item cannot be fetched.`);
         return null;
     }
 
-    console.log(`Secure config env var ${envVar} = ${process.env[envVar]}.`);
-    return await fetchFromS3<T>(bucket, process.env[envVar]);
+    return await fetchFromS3<T>(process.env[bucketEnvVar], process.env[keyEnvVar]);
 }

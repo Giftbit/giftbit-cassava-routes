@@ -35,14 +35,17 @@ function fetchFromS3(bucket, key) {
     });
 }
 exports.fetchFromS3 = fetchFromS3;
-function fetchFromS3ByEnvVar(bucket, envVar) {
+function fetchFromS3ByEnvVar(bucketEnvVar, keyEnvVar) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!process || !process.env[envVar]) {
-            console.error(`${envVar} is not set.  The secure config item cannot be fetched.`);
+        if (!process || !process.env[bucketEnvVar]) {
+            console.error(`${bucketEnvVar} is not set.  The secure config item cannot be fetched.`);
             return null;
         }
-        console.log(`Secure config env var ${envVar} = ${process.env[envVar]}.`);
-        return yield fetchFromS3(bucket, process.env[envVar]);
+        if (!process || !process.env[keyEnvVar]) {
+            console.error(`${keyEnvVar} is not set.  The secure config item cannot be fetched.`);
+            return null;
+        }
+        return yield fetchFromS3(process.env[bucketEnvVar], process.env[keyEnvVar]);
     });
 }
 exports.fetchFromS3ByEnvVar = fetchFromS3ByEnvVar;
