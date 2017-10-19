@@ -26,7 +26,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             // Expiration time is checked manually because we issued JWTs with date string expirations,
             // which is against the spec and the library rightly rejects those.
             const token = this.getToken(evt);
-            const payload = jwt.verify(token, secret.secretkey, {ignoreExpiration: false, algorithms: ["HS256"]});
+            const payload = jwt.verify(token, secret.secretkey, {ignoreExpiration: false, algorithms: ["HS256"]}) as object;
             evt.meta["auth"] = new AuthorizationBadge(payload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
             const header = (jwt.decode(token, {complete: true}) as any).header;
             evt.meta["auth-header"] = new AuthorizationHeader(header);

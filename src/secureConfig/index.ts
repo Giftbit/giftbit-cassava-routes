@@ -13,14 +13,25 @@ const s3 = new aws.S3({
 });
 
 export async function fetchFromS3<T>(bucket: string, key: string): Promise<T> {
-    console.log("Fetching Config from s3", bucket, key);
-    const getObject = await s3.getObject({
-        Bucket: bucket,
-        Key: key
-    }).promise()
-        .then(s3Object => {
-            return JSON.parse(s3Object.Body.toString());
-        }).catch(error => console.error(`Could not retrieve secureConfig from ${bucket}/${key}`, error));
+    console.log(`Fetching secure config item ${bucket}/${key}.`);
+    try {
+        const resp = await s3.getObject({
+            Bucket: bucket,
+            Key: key
+        }).promise();
+        return JSON.parse(resp.Body.toString());
+    } catch (error) {
+        console.error(`Could not retrieve config from ${bucket}/${key}`, error);
+        return null;
+    }
+}
 
-    return getObject;
+export async function fetchFromS3ByEnvVar<T>(bucket: string, envVar: string): Promise<T> {
+    if (!process || !process.env[envVar]) {
+        console.error(`${envVar} is not set.  The secure config item cannot be fetched.`);
+        return null;
+    }
+
+    console.log(`Secure config env var ${envVar} = ${process.env[envVar]}.`);
+    return await fetchFromS3<T>(bucket, process.env[envVar]);
 }
