@@ -22,12 +22,13 @@ export class AuthorizationBadge {
     issuedAtTime: Date;
     expirationTime: Date;
     uniqueIdentifier: string;
+    parentUniqueIdentifier: string;
 
     roles: string[] = [];
     scopes: string[] = [];
     effectiveScopes: string[] = [];
 
-    constructor(jwtPayload?: JwtPayload, rolesConfig?: RolesConfig) {
+    constructor(jwtPayload?: JwtPayload, private readonly rolesConfig?: RolesConfig) {
         if (jwtPayload) {
             if (jwtPayload.g) {
                 this.giftbitUserId = jwtPayload.g.gui;
@@ -45,6 +46,7 @@ export class AuthorizationBadge {
             this.roles = jwtPayload.roles || [];
             this.scopes = jwtPayload.scopes || [];
             this.uniqueIdentifier = jwtPayload.jti;
+            this.parentUniqueIdentifier = jwtPayload.parentJti;
 
             if (typeof jwtPayload.iat === "number") {
                 this.issuedAtTime = new Date(jwtPayload.iat * 1000);
@@ -97,11 +99,12 @@ export class AuthorizationBadge {
         if (this.roles.length) {
             payload.roles = this.roles;
         }
-        if (this.scopes.length) {
-            payload.scopes = this.scopes;
-        }
+        payload.scopes = this.scopes;
         if (this.uniqueIdentifier) {
             payload.jti = this.uniqueIdentifier;
+        }
+        if (this.parentUniqueIdentifier) {
+            payload.parentJti = this.parentUniqueIdentifier;
         }
         if (this.issuedAtTime) {
             payload.iat = this.issuedAtTime.getTime() / 1000;
@@ -120,6 +123,23 @@ export class AuthorizationBadge {
                 vav: 1
             }
         });
+    }
+
+    assumeJwtIdentity(jwtPayload: JwtPayload): AuthorizationBadge {
+        this.requireScopes("ASSUME");
+
+        const j = this.getJwtPayload();
+        j.g = {
+            ... jwtPayload.g,
+            si: this.giftbitUserId
+        };
+        j.parentJti = jwtPayload.jti;
+
+        const badge = new AuthorizationBadge(j, this.rolesConfig);
+        badge.scopes = badge.scopes.filter(scope => scope !== "ASSUME");
+        badge.effectiveScopes = badge.effectiveScopes.filter(scope => scope !== "ASSUME");
+
+        return badge;
     }
 
     requireIds(...ids: ("giftbitUserId" | "merchantId" | "cardId" | "programId" | "recipientId" | "templateId" | "teamMemberId" | "serviceId")[]): void {
