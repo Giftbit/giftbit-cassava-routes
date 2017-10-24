@@ -4,6 +4,7 @@ import {AuthorizationBadge} from "./AuthorizationBadge";
 import {AuthorizationHeader} from "./AuthorizationHeader";
 import {AuthenticationConfig} from "../secureConfig/AuthenticationConfig";
 import {RolesConfig} from "../secureConfig/RolesConfig";
+import {JwtPayload} from "./JwtPayload";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
 
@@ -20,16 +21,24 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         try {
             const secret = await this.authConfigPromise;
             if (!secret) {
+                // noinspection ExceptionCaughtLocallyJS
                 throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
             }
 
-            // Expiration time is checked manually because we issued JWTs with date string expirations,
-            // which is against the spec and the library rightly rejects those.
             const token = this.getToken(evt);
-            const payload = jwt.verify(token, secret.secretkey, {ignoreExpiration: false, algorithms: ["HS256"]}) as object;
-            evt.meta["auth"] = new AuthorizationBadge(payload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
-            const header = (jwt.decode(token, {complete: true}) as any).header;
-            evt.meta["auth-header"] = new AuthorizationHeader(header);
+            const authPayload = jwt.verify(token, secret.secretkey, {ignoreExpiration: false, algorithms: ["HS256"]}) as object;
+            const auth = new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+            const authHeaderPayload = (jwt.decode(token, {complete: true}) as any).header;
+            const authHeader = new AuthorizationHeader(authHeaderPayload);
+
+            const authAs = this.getAuthorizeAs(evt);
+            if (authAs) {
+                evt.meta["auth"] = auth.assumeJwtIdentity(authAs);
+            } else {
+                evt.meta["auth"] = auth;
+            }
+
+            evt.meta["auth-header"] = authHeader;
         } catch (e) {
             this.logErrors && console.error("error verifying jwt", e);
             throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
@@ -77,5 +86,18 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
         this.logErrors && console.log(`request doesn't have Authorization header or X-Requested-With header (${authorization}) with Cookies gb_jwt_session (${evt.cookies["gb_jwt_session"]}) and gb_jwt_signature (${evt.cookies["gb_jwt_signature"]})`);
         throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
+    }
+
+    private getAuthorizeAs(evt: cassava.RouterEvent): JwtPayload {
+        try {
+            const base64 = evt.getHeader("AuthorizeAs");
+            if (!base64) {
+                return null;
+            }
+            const jsonString = Buffer.from(base64, "base64").toString("utf-8");
+            return JSON.parse(jsonString) as JwtPayload;
+        } catch (ignored) {
+            return null;
+        }
     }
 }

@@ -345,7 +345,7 @@ describe("AuthorizationBadge", () => {
                 "alg": "HS256",
                 "typ": "JWT"
             };
-            const originalPayload = {
+            const originalPayload: JwtPayload = {
                 "g": {
                     "gui": "user-7052210bcb94448b825ffa68508d29ad-TEST",
                     "gmi": "user-7052210bcb94448b825ffa68508d29ad-TEST"
@@ -370,6 +370,166 @@ describe("AuthorizationBadge", () => {
 
             chai.assert.deepEqual(originalPayload, newPayload);
             chai.assert.deepEqual(originalHeader, newHeader);
+        });
+
+        it("signs a newer JWT with roles and parentJti", () => {
+            const originalHeader = {
+                "ver": 2,
+                "vav": 1,
+                "alg": "HS256",
+                "typ": "JWT"
+            };
+            const originalPayload: JwtPayload = {
+                "g": {
+                    "gui": "user-f7ddcbbfe0e741c688993da35669a47b",
+                    "gmi": "user-f7ddcbbfe0e741c688993da35669a47b",
+                    "tmi": "user-f7ddcbbfe0e741c688993da35669a47b"
+                },
+                "aud": "API_KEY",
+                "iss": "SERVICES_V1",
+                "iat": 1508444281.149,
+                "jti": "badge-cca79a9a42134e609aafdc8e9482854e",
+                "parentJti": "badge-11ee41e6d9b1477da63cb23a3f3b50ec",
+                "scopes": [],
+                "roles": [
+                    "accountManager",
+                    "contactManager",
+                    "customerServiceManager",
+                    "customerServiceRepresentative",
+                    "pointOfSale",
+                    "programManager",
+                    "promoter",
+                    "reporter",
+                    "securityManager",
+                    "teamAdmin",
+                    "webPortal"
+                ]
+            };
+
+            const auth = new AuthorizationBadge(originalPayload);
+            const newToken = auth.sign("secret");
+            const newHeader = (jwt.decode(newToken, {complete: true}) as any).header;
+            const newPayload = jwt.verify(newToken, "secret", {algorithms: ["HS256"]});
+
+            chai.assert.deepEqual(originalPayload, newPayload);
+            chai.assert.deepEqual(originalHeader, newHeader);
+        })
+    });
+
+    describe("assumeJwtIdentity()", () => {
+        it("can assume the given identity", () => {
+            const auth = new AuthorizationBadge({
+                "g": {
+                    "gui": "user-f7ddcbbfe0e741c688993da35669a47b",
+                    "gmi": "user-f7ddcbbfe0e741c688993da35669a47b",
+                    "tmi": "user-f7ddcbbfe0e741c688993da35669a47b"
+                },
+                "aud": "API_KEY",
+                "iss": "SERVICES_V1",
+                "iat": 1508444281.149,
+                "jti": "badge-cca79a9a42134e609aafdc8e9482854e",
+                "parentJti": "badge-11ee41e6d9b1477da63cb23a3f3b50ec",
+                "scopes": [
+                    "ASSUME"
+                ],
+                "roles": [
+                    "accountManager",
+                    "contactManager",
+                    "customerServiceManager",
+                    "customerServiceRepresentative",
+                    "pointOfSale",
+                    "programManager",
+                    "promoter",
+                    "reporter",
+                    "securityManager",
+                    "teamAdmin",
+                    "webPortal"
+                ]
+            });
+
+            const auth2 = auth.assumeJwtIdentity({
+                "g": {
+                    "gui": "user-123-TEST",
+                    "gmi": "user-123-TEST"
+                },
+                "iat": "2017-04-25T22:09:33.266+0000",
+                "jti": "badge-2",
+                "scopes": [
+                    "IRRELEVANT"
+                ],
+                "roles": [
+                    "pointOfSale"
+                ]
+            });
+
+            chai.assert.isFalse(auth2.isBadgeAuthorized("ASSUME"), `not in ${JSON.stringify(auth2.scopes)} or ${JSON.stringify(auth2.effectiveScopes)}`);
+            chai.assert.equal(auth2.giftbitUserId, "user-123-TEST");
+            chai.assert.equal(auth2.merchantId, "user-123-TEST");
+            chai.assert.equal(auth2.uniqueIdentifier, "badge-cca79a9a42134e609aafdc8e9482854e");
+            chai.assert.equal(auth2.parentUniqueIdentifier, "badge-2");
+            chai.assert.deepEqual(auth2.scopes, []);
+            chai.assert.deepEqual(auth2.roles, [
+                "accountManager",
+                "contactManager",
+                "customerServiceManager",
+                "customerServiceRepresentative",
+                "pointOfSale",
+                "programManager",
+                "promoter",
+                "reporter",
+                "securityManager",
+                "teamAdmin",
+                "webPortal"
+            ]);
+        });
+
+        it("requires the original identity to have ASSUME scope", () => {
+            const auth = new AuthorizationBadge({
+                "g": {
+                    "gui": "user-f7ddcbbfe0e741c688993da35669a47b",
+                    "gmi": "user-f7ddcbbfe0e741c688993da35669a47b",
+                    "tmi": "user-f7ddcbbfe0e741c688993da35669a47b"
+                },
+                "aud": "API_KEY",
+                "iss": "SERVICES_V1",
+                "iat": 1508444281.149,
+                "jti": "badge-cca79a9a42134e609aafdc8e9482854e",
+                "parentJti": "badge-11ee41e6d9b1477da63cb23a3f3b50ec",
+                "scopes": [],
+                "roles": [
+                    "accountManager",
+                    "contactManager",
+                    "customerServiceManager",
+                    "customerServiceRepresentative",
+                    "pointOfSale",
+                    "programManager",
+                    "promoter",
+                    "reporter",
+                    "securityManager",
+                    "teamAdmin",
+                    "webPortal"
+                ]
+            });
+
+            chai.assert.throws(() => {
+                auth.assumeJwtIdentity({
+                    "g": {
+                        "gui": "user-123-TEST",
+                        "gmi": "user-123-TEST"
+                    },
+                    "iat": "2017-04-25T22:09:33.266+0000",
+                    "jti": "badge-2",
+                    "scopes": [
+                        "C",
+                        "T",
+                        "R",
+                        "F",
+                        "CEC",
+                        "CER",
+                        "UA"
+                    ]
+                });
+            });
         });
     });
 });
