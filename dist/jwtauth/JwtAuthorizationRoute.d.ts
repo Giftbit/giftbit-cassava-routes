@@ -13,4 +13,5 @@ export declare class JwtAuthorizationRoute implements cassava.routes.Route {
     postProcess(evt: cassava.RouterEvent, resp: cassava.RouterResponse): Promise<cassava.RouterResponse>;
     matches(evt: cassava.RouterEvent): boolean;
     private getToken(evt);
+    private getAuthorizeAs(evt);
 }

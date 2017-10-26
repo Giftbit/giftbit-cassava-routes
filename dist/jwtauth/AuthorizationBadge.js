@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
  */
 class AuthorizationBadge {
     constructor(jwtPayload, rolesConfig) {
+        this.rolesConfig = rolesConfig;
         this.roles = [];
         this.scopes = [];
         this.effectiveScopes = [];
@@ -26,6 +27,7 @@ class AuthorizationBadge {
             this.roles = jwtPayload.roles || [];
             this.scopes = jwtPayload.scopes || [];
             this.uniqueIdentifier = jwtPayload.jti;
+            this.parentUniqueIdentifier = jwtPayload.parentJti;
             if (typeof jwtPayload.iat === "number") {
                 this.issuedAtTime = new Date(jwtPayload.iat * 1000);
             }
@@ -75,11 +77,12 @@ class AuthorizationBadge {
         if (this.roles.length) {
             payload.roles = this.roles;
         }
-        if (this.scopes.length) {
-            payload.scopes = this.scopes;
-        }
+        payload.scopes = this.scopes;
         if (this.uniqueIdentifier) {
             payload.jti = this.uniqueIdentifier;
+        }
+        if (this.parentUniqueIdentifier) {
+            payload.parentJti = this.parentUniqueIdentifier;
         }
         if (this.issuedAtTime) {
             payload.iat = this.issuedAtTime.getTime() / 1000;
@@ -97,6 +100,16 @@ class AuthorizationBadge {
                 vav: 1
             }
         });
+    }
+    assumeJwtIdentity(jwtPayload) {
+        this.requireScopes("ASSUME");
+        const j = this.getJwtPayload();
+        j.g = Object.assign({}, jwtPayload.g, { si: this.giftbitUserId });
+        j.parentJti = jwtPayload.jti;
+        const badge = new AuthorizationBadge(j, this.rolesConfig);
+        badge.scopes = badge.scopes.filter(scope => scope !== "ASSUME");
+        badge.effectiveScopes = badge.effectiveScopes.filter(scope => scope !== "ASSUME");
+        return badge;
     }
     requireIds(...ids) {
         for (let id of ids) {

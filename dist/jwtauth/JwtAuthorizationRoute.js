@@ -26,15 +26,23 @@ class JwtAuthorizationRoute {
             try {
                 const secret = yield this.authConfigPromise;
                 if (!secret) {
+                    // noinspection ExceptionCaughtLocallyJS
                     throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
                 }
-                // Expiration time is checked manually because we issued JWTs with date string expirations,
-                // which is against the spec and the library rightly rejects those.
                 const token = this.getToken(evt);
-                const payload = jwt.verify(token, secret.secretkey, { ignoreExpiration: false, algorithms: ["HS256"] });
-                evt.meta["auth"] = new AuthorizationBadge_1.AuthorizationBadge(payload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
-                const header = jwt.decode(token, { complete: true }).header;
-                evt.meta["auth-header"] = new AuthorizationHeader_1.AuthorizationHeader(header);
+                const authPayload = jwt.verify(token, secret.secretkey, { ignoreExpiration: false, algorithms: ["HS256"] });
+                const auth = new AuthorizationBadge_1.AuthorizationBadge(authPayload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
+                const authHeaderPayload = jwt.decode(token, { complete: true }).header;
+                const authHeader = new AuthorizationHeader_1.AuthorizationHeader(authHeaderPayload);
+                const authAs = this.getAuthorizeAs(evt);
+                if (authAs) {
+                    evt.meta["auth"] = auth.assumeJwtIdentity(authAs);
+                }
+                else {
+                    evt.meta["auth"] = auth;
+                }
+                evt.meta["auth-token"] = token;
+                evt.meta["auth-header"] = authHeader;
             }
             catch (e) {
                 this.logErrors && console.error("error verifying jwt", e);
@@ -80,6 +88,19 @@ class JwtAuthorizationRoute {
         }
         this.logErrors && console.log(`request doesn't have Authorization header or X-Requested-With header (${authorization}) with Cookies gb_jwt_session (${evt.cookies["gb_jwt_session"]}) and gb_jwt_signature (${evt.cookies["gb_jwt_signature"]})`);
         throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
+    }
+    getAuthorizeAs(evt) {
+        try {
+            const base64 = evt.getHeader("AuthorizeAs");
+            if (!base64) {
+                return null;
+            }
+            const jsonString = Buffer.from(base64, "base64").toString("utf-8");
+            return JSON.parse(jsonString);
+        }
+        catch (ignored) {
+            return null;
+        }
     }
 }
 exports.JwtAuthorizationRoute = JwtAuthorizationRoute;

@@ -38,6 +38,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
                 evt.meta["auth"] = auth;
             }
 
+            evt.meta["auth-token"] = token;
             evt.meta["auth-header"] = authHeader;
         } catch (e) {
             this.logErrors && console.error("error verifying jwt", e);
