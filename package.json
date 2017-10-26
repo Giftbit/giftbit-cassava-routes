@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/Giftbit/giftbit-cassava#readme",
   "peerDependencies": {
-    "cassava": "^0.2.5"
+    "cassava": "^0.4.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^0.0.17",
