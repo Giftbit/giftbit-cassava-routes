@@ -331,7 +331,7 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     describe("assume support", () => {
-        it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload", async() => {
+        it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload 1", async() => {
             let secondHandlerCalled = false;
             const router = new cassava.Router();
             const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
@@ -357,6 +357,39 @@ describe("JwtAuthorizationRoute", () => {
                 headers: {
                     Authorization: "Bearer eyJ2ZXIiOjIsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InNlcnZpY2UtMSIsImdtaSI6InNlcnZpY2UtMSJ9LCJpYXQiOiIyMDE3LTA0LTI1VDIyOjA5OjMzLjI2NiswMDAwIiwianRpIjoiYmFkZ2UtMTIzNCIsInNjb3BlcyI6WyJDIiwiQVNTVU1FIl19.bXvaU7Gca9_13yqfblgZ2IUuN-0xKNbUTRlC8g2q4-g",
                     AuthorizeAs: "eyJnIjp7Imd1aSI6InVzZXItMTIzIiwiZ21pIjoidXNlci0xMjMifSwiaWF0IjoiMjAxNy0wNC0yNVQyMjowOTozMy4yNjYrMDAwMCIsImp0aSI6ImJhZGdlLTIiLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiRiIsIkNFQyIsIkNFUiIsIlVBIl19"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+            chai.assert.isTrue(secondHandlerCalled);
+        });
+
+        it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload 2", async() => {
+            let secondHandlerCalled = false;
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
+            jwtAuthorizationRoute.logErrors = false;
+            router.route(jwtAuthorizationRoute);
+            router.route({
+                matches: () => true,
+                handle: async evt => {
+                    const auth = evt.meta["auth"] as AuthorizationBadge;
+                    chai.assert.isObject(auth);
+                    chai.assert.equal(auth.giftbitUserId, "user-9485b8758ca542b098a30ca4f7745d2a-TEST");
+                    chai.assert.sameMembers(auth.scopes, [
+                        "lightrailV1:token:read",
+                        "lightrailV1:sharedSecret:read"
+                    ]);
+                    secondHandlerCalled = true;
+                    return {body: {}};
+                }
+            });
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjMsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNWUwNWQxNDQ2OWJjNDI3NDk4ODI5NzA1ODI3NWQzYTYtVEVTVCIsImdtaSI6InVzZXItNWUwNWQxNDQ2OWJjNDI3NDk4ODI5NzA1ODI3NWQzYTYtVEVTVCJ9LCJpYXQiOiIyMDE3LTA2LTI3VDIxOjQ5OjUwLjY3NSswMDAwIiwianRpIjoiYmFkZ2UtYmM0NDkxMTJkZDlhNGY1N2I1M2Y1ZDNiMTc4N2Q0Y2QiLCJzY29wZXMiOlsiQVNTVU1FIiwibGlnaHRyYWlsVjE6dG9rZW46cmVhZCIsImxpZ2h0cmFpbFYxOnNoYXJlZFNlY3JldDpyZWFkIl19.EZWBzz4F8ow7QfHAf7k-mjqQ8sJ5hZGED7FkERLUtKY",
+                    AuthorizeAs: "eyJnIjp7Imd1aSI6InVzZXItOTQ4NWI4NzU4Y2E1NDJiMDk4YTMwY2E0Zjc3NDVkMmEtVEVTVCJ9LCJpc3MiOiJNRVJDSEFOVCIsInNjb3BlcyI6WyJsaWdodHJhaWxWMSJdLCJpYXQiOjE1MDkwNTcxNjR9"
                 }
             }));
 
