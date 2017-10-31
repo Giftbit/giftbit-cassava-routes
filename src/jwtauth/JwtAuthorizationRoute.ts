@@ -1,8 +1,10 @@
 import * as cassava from "cassava";
 import * as jwt from "jsonwebtoken";
+import * as superagent from "superagent";
 import {AuthorizationBadge} from "./AuthorizationBadge";
 import {AuthorizationHeader} from "./AuthorizationHeader";
 import {AuthenticationConfig} from "../secureConfig/AuthenticationConfig";
+import {AssumeStorageScopeToken} from "../secureConfig/AssumeStorageScopeToken";
 import {RolesConfig} from "../secureConfig/RolesConfig";
 import {JwtPayload} from "./JwtPayload";
 
@@ -13,21 +15,19 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
      */
     logErrors = true;
 
+    private jwtSecrets: Map<string, superagent.Request> = new Map<string, superagent.Request>();
+
     constructor(
         private readonly authConfigPromise: Promise<AuthenticationConfig>,
-        private readonly rolesConfigPromise?: Promise<RolesConfig>) {}
+        private readonly rolesConfigPromise?: Promise<RolesConfig>,
+        private readonly assumeStorageTokenConfigPromise?: Promise<AssumeStorageScopeToken>,
+        private readonly assumeStorageTokenUri?: string) {}
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
         try {
-            const secret = await this.authConfigPromise;
-            if (!secret) {
-                // noinspection ExceptionCaughtLocallyJS
-                throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
-            }
-
             const token = this.getToken(evt);
-            const authPayload = jwt.verify(token, secret.secretkey, {ignoreExpiration: false, algorithms: ["HS256"]}) as object;
-            const auth = new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+            const auth = await this.getVerifiedAuthorizationBadge(token);
+
             const authHeaderPayload = (jwt.decode(token, {complete: true}) as any).header;
             const authHeader = new AuthorizationHeader(authHeaderPayload);
 
@@ -100,5 +100,49 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         } catch (ignored) {
             return null;
         }
+    }
+
+    private async getVerifiedAuthorizationBadge(token: string): Promise<AuthorizationBadge> {
+        const secret = await this.authConfigPromise;
+        if (!secret) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
+        }
+
+        const unverifiedAuthPayload = (jwt.decode(token) as any);
+
+        if ( unverifiedAuthPayload.issuer === "MERCHANT" ) {
+            const secret = await this.getMerchantSharedSigningSecret(token);
+            const authPayload = jwt.verify(token, secret, {
+                ignoreExpiration: false,
+                algorithms: ["HS256"]
+            }) as object;
+
+            const shopperPayload = {
+                ... authPayload,
+                scopes: [] as string [],
+                roles: ["shopper"]
+            };
+            return new AuthorizationBadge(shopperPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+        } else {
+            const authPayload = jwt.verify(token, secret.secretkey, {
+                ignoreExpiration: false,
+                algorithms: ["HS256"]
+            }) as object;
+            return new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+        }
+    }
+
+    private async getMerchantSharedSigningSecret(token: string): Promise<string> {
+        const tokenPayload = token.split(".")[1];
+        const storageTokenConfig = (await this.assumeStorageTokenConfigPromise);
+
+        if (!this.jwtSecrets.get(tokenPayload)) {
+            const resp = superagent("GET", this.assumeStorageTokenUri)
+                .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
+                .set("AuthorizeAs", tokenPayload);
+            this.jwtSecrets.set(tokenPayload, resp);
+        }
+        return (await this.jwtSecrets.get(tokenPayload)).body;
     }
 }
