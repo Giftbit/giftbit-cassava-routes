@@ -442,19 +442,19 @@ describe("JwtAuthorizationRoute", () => {
         let staticKey: StaticKey;
         let router: cassava.Router;
         let jwtAuthorizationRoute: JwtAuthorizationRoute;
-        let origionalMerchantKeyProvider: MerchantKeyProvider;
+        let originalMerchantKeyProvider: MerchantKeyProvider;
 
         beforeEach(() => {
             router = new cassava.Router();
             jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, "http://someUuri", Promise.resolve({assumeToken: "secret"}));
-            origionalMerchantKeyProvider = jwtAuthorizationRoute.merchantKeyProvider;
+            originalMerchantKeyProvider = jwtAuthorizationRoute.merchantKeyProvider;
             (jwtAuthorizationRoute as any).merchantKeyProvider = staticKey = new StaticKey("someOtherSecret");
             jwtAuthorizationRoute.logErrors = false;
         });
 
         afterEach(() => {
-            (jwtAuthorizationRoute as any).merchantKeyProvider = origionalMerchantKeyProvider;
-            origionalMerchantKeyProvider = staticKey = null
+            (jwtAuthorizationRoute as any).merchantKeyProvider = originalMerchantKeyProvider;
+            originalMerchantKeyProvider = staticKey = null
         });
 
         it("verifies a valid merchant JWT", async() => {
