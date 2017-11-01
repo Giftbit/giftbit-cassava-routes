@@ -434,4 +434,122 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
         });
     });
+
+    describe("merchant self signing support", () => {
+        it("verifies a valid merchant JWT", async() => {
+            let secondHandlerCalled = false;
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someOtherSecret"));
+            jwtAuthorizationRoute.logErrors = false;
+            router.route(jwtAuthorizationRoute);
+            router.route({
+                matches: () => true,
+                handle: async evt => {
+                    const auth = evt.meta["auth"] as AuthorizationBadge;
+                    chai.assert.isObject(auth);
+                    chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
+                    chai.assert.sameMembers(auth.roles, ["shopper"]);
+                    chai.assert.sameMembers(auth.scopes, []);
+                    chai.assert.instanceOf(auth.issuedAtTime, Date);
+                    chai.assert.equal(auth.issuedAtTime.getTime(), 1481573500000);
+                    secondHandlerCalled = true;
+                    return {body: {}};
+                }
+            });
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJpc3MiOiJNRVJDSEFOVCJ9.4Fanf_JhmRa389mhGgk1QKWulRC8ZiRimOrcmhxa2Eo"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+            chai.assert.isTrue(secondHandlerCalled);
+        });
+
+        it("verifies a valid merchant JWT without escalating scopes or roles", async() => {
+            let secondHandlerCalled = false;
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someOtherSecret"));
+            jwtAuthorizationRoute.logErrors = false;
+            router.route(jwtAuthorizationRoute);
+            router.route({
+                matches: () => true,
+                handle: async evt => {
+                    const auth = evt.meta["auth"] as AuthorizationBadge;
+                    chai.assert.isObject(auth);
+                    chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
+                    chai.assert.sameMembers(auth.roles, ["shopper"]);
+                    chai.assert.sameMembers(auth.scopes, []);
+                    chai.assert.instanceOf(auth.issuedAtTime, Date);
+                    chai.assert.equal(auth.issuedAtTime.getTime(), 1481573500000);
+                    secondHandlerCalled = true;
+                    return {body: {}};
+                }
+            });
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJpc3MiOiJNRVJDSEFOVCIsInNjb3BlcyI6WyJzb21lU2NvcGUiXSwicm9sZXMiOlsic29tZVJvbGUiXX0.bbC_w7MH_vUWxDWs86w48SeEo9HT7NgFNN4HwnV7otw"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+            chai.assert.isTrue(secondHandlerCalled);
+        });
+
+        it("rejects a JWT with a bad signature in the Authorization header", async() => {
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someDifferentSecret"));
+            jwtAuthorizationRoute.logErrors = false;
+            router.route(jwtAuthorizationRoute);
+            router.route(happyRoute);
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJpc3MiOiJNRVJDSEFOVCJ9.4Fanf_JhmRa389mhGgk1QKWulRC8ZiRimOrcmhxa2Eo"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
+        });
+
+        it("rejects a JWT with alg:none", async() => {
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someOtherSecret"));
+            jwtAuthorizationRoute.logErrors = false;
+            router.route(jwtAuthorizationRoute);
+            router.route(happyRoute);
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoibm9uZSIsInR5cCI6IkpXVCJ9.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJpc3MiOiJNRVJDSEFOVCJ9.Rzd5VF_okqUOI0cyKSWliWKIrnypUv6AtrQSgRUCo3A"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
+        });
+
+        it("rejects an expired JWT", async() => {
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someOtherSecret"));
+            jwtAuthorizationRoute.logErrors = false;
+            router.route(jwtAuthorizationRoute);
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoibm9uZSIsInR5cCI6IkpXVCJ9.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJleHAiOjE0ODE1NzM1MDAsImlzcyI6Ik1FUkNIQU5UIn0.AcG5BPZnmQZn9rM6cajltugRpjbse-L_xaqjTgdZTQw"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
+        });
+    });
 });

@@ -20,8 +20,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
     constructor(
         private readonly authConfigPromise: Promise<AuthenticationConfig>,
         private readonly rolesConfigPromise?: Promise<RolesConfig>,
-        private readonly assumeStorageTokenConfigPromise?: Promise<AssumeStorageScopeToken>,
-        private readonly assumeStorageTokenUri?: string) {}
+        private readonly getMerchantSharedKey?: (token: string) => Promise<string>) {}
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
         try {
@@ -105,19 +104,16 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
     private async getVerifiedAuthorizationBadge(token: string): Promise<AuthorizationBadge> {
         const secret = await this.authConfigPromise;
         if (!secret) {
-            // noinspection ExceptionCaughtLocallyJS
             throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
         }
-
         const unverifiedAuthPayload = (jwt.decode(token) as any);
 
-        if ( unverifiedAuthPayload.issuer === "MERCHANT" ) {
-            const secret = await this.getMerchantSharedSigningSecret(token);
+        if ( unverifiedAuthPayload.iss === "MERCHANT" ) {
+            const secret = await this.getMerchantSharedKey(token);
             const authPayload = jwt.verify(token, secret, {
                 ignoreExpiration: false,
                 algorithms: ["HS256"]
             }) as object;
-
             const shopperPayload = {
                 ... authPayload,
                 scopes: [] as string [],
@@ -131,18 +127,5 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             }) as object;
             return new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
         }
-    }
-
-    private async getMerchantSharedSigningSecret(token: string): Promise<string> {
-        const tokenPayload = token.split(".")[1];
-        const storageTokenConfig = (await this.assumeStorageTokenConfigPromise);
-
-        if (!this.jwtSecrets.get(tokenPayload)) {
-            const resp = superagent("GET", this.assumeStorageTokenUri)
-                .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
-                .set("AuthorizeAs", tokenPayload);
-            this.jwtSecrets.set(tokenPayload, resp);
-        }
-        return (await this.jwtSecrets.get(tokenPayload)).body;
     }
 }
