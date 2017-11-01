@@ -8,7 +8,6 @@ export function getMerchantSharedKeyProvider(storageUri: string,  assumeStorageT
         const resp = await superagent("GET", storageUri)
             .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
             .set("AuthorizeAs", tokenPayload);
-        this.jwtSecrets.set(tokenPayload, resp);
         return resp.body;
     };
 }
