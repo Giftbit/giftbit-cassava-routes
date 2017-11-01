@@ -2,10 +2,12 @@ import * as cassava from "cassava";
 import * as chai from "chai";
 import {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
 import {AuthorizationBadge} from "./AuthorizationBadge";
+import {StaticKey} from "./merchantSharedKey/StaticKey";
+import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
 
 describe("JwtAuthorizationRoute", () => {
 
-    const authConfigPromise = Promise.resolve({secretkey:"secret"});
+    const authConfigPromise = Promise.resolve({secretkey: "secret"});
     const happyRoute: cassava.routes.Route = {
         matches: () => true,
         handle: async evt => ({body: {}})
@@ -436,11 +438,27 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     describe("merchant self signing support", () => {
+
+        let staticKey: StaticKey;
+        let router: cassava.Router;
+        let jwtAuthorizationRoute: JwtAuthorizationRoute;
+        let origionalMerchantKeyProvider: MerchantKeyProvider;
+
+        beforeEach(() => {
+            router = new cassava.Router();
+            jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, "http://someUuri", Promise.resolve({assumeToken: "secret"}));
+            origionalMerchantKeyProvider = jwtAuthorizationRoute.merchantKeyProvider;
+            (jwtAuthorizationRoute as any).merchantKeyProvider = staticKey = new StaticKey("someOtherSecret");
+            jwtAuthorizationRoute.logErrors = false;
+        });
+
+        afterEach(() => {
+            (jwtAuthorizationRoute as any).merchantKeyProvider = origionalMerchantKeyProvider;
+            origionalMerchantKeyProvider = staticKey = null
+        });
+
         it("verifies a valid merchant JWT", async() => {
             let secondHandlerCalled = false;
-            const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someOtherSecret"));
-            jwtAuthorizationRoute.logErrors = false;
             router.route(jwtAuthorizationRoute);
             router.route({
                 matches: () => true,
@@ -471,9 +489,6 @@ describe("JwtAuthorizationRoute", () => {
 
         it("verifies a valid merchant JWT without escalating scopes or roles", async() => {
             let secondHandlerCalled = false;
-            const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someOtherSecret"));
-            jwtAuthorizationRoute.logErrors = false;
             router.route(jwtAuthorizationRoute);
             router.route({
                 matches: () => true,
@@ -503,9 +518,7 @@ describe("JwtAuthorizationRoute", () => {
         });
 
         it("rejects a JWT with a bad signature in the Authorization header", async() => {
-            const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someDifferentSecret"));
-            jwtAuthorizationRoute.logErrors = false;
+            (jwtAuthorizationRoute as any).merchantKeyProvider = new StaticKey("someDifferentSecret");
             router.route(jwtAuthorizationRoute);
             router.route(happyRoute);
 
@@ -520,9 +533,6 @@ describe("JwtAuthorizationRoute", () => {
         });
 
         it("rejects a JWT with alg:none", async() => {
-            const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someOtherSecret"));
-            jwtAuthorizationRoute.logErrors = false;
             router.route(jwtAuthorizationRoute);
             router.route(happyRoute);
 
@@ -537,9 +547,7 @@ describe("JwtAuthorizationRoute", () => {
         });
 
         it("rejects an expired JWT", async() => {
-            const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, (secret: string) => Promise.resolve("someOtherSecret"));
-            jwtAuthorizationRoute.logErrors = false;
+
             router.route(jwtAuthorizationRoute);
 
             const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
@@ -550,6 +558,36 @@ describe("JwtAuthorizationRoute", () => {
 
             chai.assert.isObject(resp);
             chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
+        });
+
+        it("verifies a valid merchant JWT again", async() => {
+            let secondHandlerCalled = false;
+            router.route(jwtAuthorizationRoute);
+            router.route({
+                matches: () => true,
+                handle: async evt => {
+                    const auth = evt.meta["auth"] as AuthorizationBadge;
+                    chai.assert.isObject(auth);
+                    chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
+                    chai.assert.sameMembers(auth.roles, ["shopper"]);
+                    chai.assert.sameMembers(auth.scopes, []);
+                    chai.assert.instanceOf(auth.issuedAtTime, Date);
+                    chai.assert.equal(auth.issuedAtTime.getTime(), 1481573552000);
+                    secondHandlerCalled = true;
+                    return {body: {}};
+                }
+            });
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTUyLCJpc3MiOiJNRVJDSEFOVCJ9.uoI1tQDtq9EFlcEWRFul6hQd-aV5pN2B91Sp81O909M"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+            chai.assert.isTrue(secondHandlerCalled);
         });
     });
 });

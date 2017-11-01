@@ -5,6 +5,9 @@ import {AuthorizationHeader} from "./AuthorizationHeader";
 import {AuthenticationConfig} from "../secureConfig/AuthenticationConfig";
 import {RolesConfig} from "../secureConfig/RolesConfig";
 import {JwtPayload} from "./JwtPayload";
+import {AssumeStorageScopeToken} from "../secureConfig/AssumeStorageScopeToken";
+import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
+import {AssumeStorageKey} from "./merchantSharedKey/AssumeStorageKey";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
 
@@ -13,10 +16,18 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
      */
     logErrors = true;
 
+    readonly merchantKeyProvider: MerchantKeyProvider;
+
     constructor(
         private readonly authConfigPromise: Promise<AuthenticationConfig>,
         private readonly rolesConfigPromise?: Promise<RolesConfig>,
-        private readonly getMerchantSharedKey?: (token: string) => Promise<string>) {}
+        private readonly storageUri?: string,
+        private readonly assumeStorageToken?: Promise<AssumeStorageScopeToken>) {
+
+        if ( storageUri && assumeStorageToken ) {
+            this.merchantKeyProvider = new AssumeStorageKey(storageUri, assumeStorageToken);
+        }
+    }
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
         try {
@@ -105,7 +116,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         const unverifiedAuthPayload = (jwt.decode(token) as any);
 
         if ( unverifiedAuthPayload.iss === "MERCHANT" ) {
-            const secret = await this.getMerchantSharedKey(token);
+            const secret = await this.merchantKeyProvider.getMerchantKey(token);
             const authPayload = jwt.verify(token, secret, {
                 ignoreExpiration: false,
                 algorithms: ["HS256"]
