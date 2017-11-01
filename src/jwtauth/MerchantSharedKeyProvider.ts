@@ -5,12 +5,10 @@ export function getMerchantSharedKeyProvider(storageUri: string,  assumeStorageT
     return async function (token: string): Promise<string> {
         const tokenPayload = token.split(".")[1];
         const storageTokenConfig = (await assumeStorageToken);
-        if (!this.jwtSecrets.get(tokenPayload)) {
-            const resp = superagent("GET", storageUri)
-                .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
-                .set("AuthorizeAs", tokenPayload);
-            this.jwtSecrets.set(tokenPayload, resp);
-        }
-        return (await this.jwtSecrets.get(tokenPayload)).body;
+        const resp = await superagent("GET", storageUri)
+            .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
+            .set("AuthorizeAs", tokenPayload);
+        this.jwtSecrets.set(tokenPayload, resp);
+        return resp.body;
     };
 }

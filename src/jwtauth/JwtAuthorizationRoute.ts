@@ -1,10 +1,8 @@
 import * as cassava from "cassava";
 import * as jwt from "jsonwebtoken";
-import * as superagent from "superagent";
 import {AuthorizationBadge} from "./AuthorizationBadge";
 import {AuthorizationHeader} from "./AuthorizationHeader";
 import {AuthenticationConfig} from "../secureConfig/AuthenticationConfig";
-import {AssumeStorageScopeToken} from "../secureConfig/AssumeStorageScopeToken";
 import {RolesConfig} from "../secureConfig/RolesConfig";
 import {JwtPayload} from "./JwtPayload";
 
@@ -14,8 +12,6 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
      * Log errors to console.
      */
     logErrors = true;
-
-    private jwtSecrets: Map<string, superagent.Request> = new Map<string, superagent.Request>();
 
     constructor(
         private readonly authConfigPromise: Promise<AuthenticationConfig>,
