@@ -13,6 +13,7 @@ export declare class AuthorizationBadge {
     templateId: string;
     teamMemberId: string;
     serviceId: string;
+    shopperId: string;
     audience: string;
     issuer: string;
     issuedAtTime: Date;
