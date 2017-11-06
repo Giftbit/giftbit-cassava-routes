@@ -7,7 +7,7 @@ import {RolesConfig} from "../secureConfig/RolesConfig";
 import {JwtPayload} from "./JwtPayload";
 import {AssumeStorageScopeToken} from "../secureConfig/AssumeStorageScopeToken";
 import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
-import {AssumeStorageKey} from "./merchantSharedKey/AssumeStorageKey";
+import {RestMerchantKeyProvider} from "./merchantSharedKey/RestMerchantKeyProvider";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
 
@@ -25,7 +25,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         private readonly assumeStorageToken?: Promise<AssumeStorageScopeToken>) {
 
         if ( storageUri && assumeStorageToken ) {
-            this.merchantKeyProvider = new AssumeStorageKey(storageUri, assumeStorageToken);
+            this.merchantKeyProvider = new RestMerchantKeyProvider(storageUri, assumeStorageToken);
         }
     }
 

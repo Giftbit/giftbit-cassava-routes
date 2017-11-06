@@ -9,5 +9,5 @@ export class StaticKey implements MerchantKeyProvider {
 
     async getMerchantKey(token: string): Promise<string> {
         return Promise.resolve(this.key);
-    };
+    }
 }

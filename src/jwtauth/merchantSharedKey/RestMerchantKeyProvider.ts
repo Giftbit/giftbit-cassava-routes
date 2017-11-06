@@ -2,7 +2,7 @@ import * as superagent from "superagent";
 import {AssumeStorageScopeToken} from "../../secureConfig/AssumeStorageScopeToken";
 import {MerchantKeyProvider} from "./MerchantKeyProvider";
 
-export class AssumeStorageKey implements MerchantKeyProvider {
+export class RestMerchantKeyProvider implements MerchantKeyProvider {
 
     constructor(
         private readonly storageUri: string,
