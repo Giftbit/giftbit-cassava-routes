@@ -12,6 +12,7 @@ export interface JwtPayload {
         pid?: string;
         si?: string;
         tmi?: string;
+        spi?: string;
     };
     aud?: string;
     iss?: string;

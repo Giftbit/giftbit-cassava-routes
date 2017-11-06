@@ -5,6 +5,9 @@ import {AuthorizationHeader} from "./AuthorizationHeader";
 import {AuthenticationConfig} from "../secureConfig/AuthenticationConfig";
 import {RolesConfig} from "../secureConfig/RolesConfig";
 import {JwtPayload} from "./JwtPayload";
+import {AssumeScopeToken} from "../secureConfig/AssumeScopeToken";
+import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
+import {RestMerchantKeyProvider} from "./merchantSharedKey/RestMerchantKeyProvider";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
 
@@ -13,21 +16,26 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
      */
     logErrors = true;
 
+    readonly merchantKeyProvider: MerchantKeyProvider;
+
     constructor(
         private readonly authConfigPromise: Promise<AuthenticationConfig>,
-        private readonly rolesConfigPromise?: Promise<RolesConfig>) {}
+        private readonly rolesConfigPromise?: Promise<RolesConfig>,
+        private readonly merchantKeyUri?: string,
+        private readonly assumeGetSharedSecretToken?: Promise<AssumeScopeToken>) {
+
+        if ( merchantKeyUri && assumeGetSharedSecretToken ) {
+            this.merchantKeyProvider = new RestMerchantKeyProvider(merchantKeyUri, assumeGetSharedSecretToken);
+        } else if ( merchantKeyUri || assumeGetSharedSecretToken ) {
+            throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
+        }
+    }
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
         try {
-            const secret = await this.authConfigPromise;
-            if (!secret) {
-                // noinspection ExceptionCaughtLocallyJS
-                throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
-            }
-
             const token = this.getToken(evt);
-            const authPayload = jwt.verify(token, secret.secretkey, {ignoreExpiration: false, algorithms: ["HS256"]}) as object;
-            const auth = new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+            const auth = await this.getVerifiedAuthorizationBadge(token);
+
             const authHeaderPayload = (jwt.decode(token, {complete: true}) as any).header;
             const authHeader = new AuthorizationHeader(authHeaderPayload);
 
@@ -99,6 +107,34 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             return JSON.parse(jsonString) as JwtPayload;
         } catch (ignored) {
             return null;
+        }
+    }
+
+    private async getVerifiedAuthorizationBadge(token: string): Promise<AuthorizationBadge> {
+        const secret = await this.authConfigPromise;
+        if (!secret) {
+            throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
+        }
+        const unverifiedAuthPayload = (jwt.decode(token) as any);
+
+        if ( unverifiedAuthPayload.iss === "MERCHANT" ) {
+            const secret = await this.merchantKeyProvider.getMerchantKey(token);
+            const authPayload = jwt.verify(token, secret, {
+                ignoreExpiration: false,
+                algorithms: ["HS256"]
+            }) as object;
+            const shopperPayload = {
+                ... authPayload,
+                scopes: [] as string [],
+                roles: ["shopper"]
+            };
+            return new AuthorizationBadge(shopperPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+        } else {
+            const authPayload = jwt.verify(token, secret.secretkey, {
+                ignoreExpiration: false,
+                algorithms: ["HS256"]
+            }) as object;
+            return new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
         }
     }
 }

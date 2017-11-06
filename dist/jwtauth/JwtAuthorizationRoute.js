@@ -12,26 +12,29 @@ const cassava = require("cassava");
 const jwt = require("jsonwebtoken");
 const AuthorizationBadge_1 = require("./AuthorizationBadge");
 const AuthorizationHeader_1 = require("./AuthorizationHeader");
+const RestMerchantKeyProvider_1 = require("./merchantSharedKey/RestMerchantKeyProvider");
 class JwtAuthorizationRoute {
-    constructor(authConfigPromise, rolesConfigPromise) {
+    constructor(authConfigPromise, rolesConfigPromise, merchantKeyUri, assumeGetSharedSecretToken) {
         this.authConfigPromise = authConfigPromise;
         this.rolesConfigPromise = rolesConfigPromise;
+        this.merchantKeyUri = merchantKeyUri;
+        this.assumeGetSharedSecretToken = assumeGetSharedSecretToken;
         /**
          * Log errors to console.
          */
         this.logErrors = true;
+        if (merchantKeyUri && assumeGetSharedSecretToken) {
+            this.merchantKeyProvider = new RestMerchantKeyProvider_1.RestMerchantKeyProvider(merchantKeyUri, assumeGetSharedSecretToken);
+        }
+        else if (merchantKeyUri || assumeGetSharedSecretToken) {
+            throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
+        }
     }
     handle(evt) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const secret = yield this.authConfigPromise;
-                if (!secret) {
-                    // noinspection ExceptionCaughtLocallyJS
-                    throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
-                }
                 const token = this.getToken(evt);
-                const authPayload = jwt.verify(token, secret.secretkey, { ignoreExpiration: false, algorithms: ["HS256"] });
-                const auth = new AuthorizationBadge_1.AuthorizationBadge(authPayload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
+                const auth = yield this.getVerifiedAuthorizationBadge(token);
                 const authHeaderPayload = jwt.decode(token, { complete: true }).header;
                 const authHeader = new AuthorizationHeader_1.AuthorizationHeader(authHeaderPayload);
                 const authAs = this.getAuthorizeAs(evt);
@@ -101,6 +104,31 @@ class JwtAuthorizationRoute {
         catch (ignored) {
             return null;
         }
+    }
+    getVerifiedAuthorizationBadge(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const secret = yield this.authConfigPromise;
+            if (!secret) {
+                throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
+            }
+            const unverifiedAuthPayload = jwt.decode(token);
+            if (unverifiedAuthPayload.iss === "MERCHANT") {
+                const secret = yield this.merchantKeyProvider.getMerchantKey(token);
+                const authPayload = jwt.verify(token, secret, {
+                    ignoreExpiration: false,
+                    algorithms: ["HS256"]
+                });
+                const shopperPayload = Object.assign({}, authPayload, { scopes: [], roles: ["shopper"] });
+                return new AuthorizationBadge_1.AuthorizationBadge(shopperPayload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
+            }
+            else {
+                const authPayload = jwt.verify(token, secret.secretkey, {
+                    ignoreExpiration: false,
+                    algorithms: ["HS256"]
+                });
+                return new AuthorizationBadge_1.AuthorizationBadge(authPayload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
+            }
+        });
     }
 }
 exports.JwtAuthorizationRoute = JwtAuthorizationRoute;
