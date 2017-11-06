@@ -26,6 +26,9 @@ class JwtAuthorizationRoute {
         if (merchantKeyUri && assumeGetSharedSecretToken) {
             this.merchantKeyProvider = new RestMerchantKeyProvider_1.RestMerchantKeyProvider(merchantKeyUri, assumeGetSharedSecretToken);
         }
+        else if (merchantKeyUri || assumeGetSharedSecretToken) {
+            throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
+        }
     }
     handle(evt) {
         return __awaiter(this, void 0, void 0, function* () {

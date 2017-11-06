@@ -1,7 +1,7 @@
 import * as cassava from "cassava";
 import { AuthenticationConfig } from "../secureConfig/AuthenticationConfig";
 import { RolesConfig } from "../secureConfig/RolesConfig";
-import { AssumeScopeToken } from "../secureConfig/AssumeStorageScopeToken";
+import { AssumeScopeToken } from "../secureConfig/AssumeScopeToken";
 import { MerchantKeyProvider } from "./merchantSharedKey/MerchantKeyProvider";
 export declare class JwtAuthorizationRoute implements cassava.routes.Route {
     private readonly authConfigPromise;

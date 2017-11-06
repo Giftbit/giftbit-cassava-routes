@@ -26,6 +26,8 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
         if ( merchantKeyUri && assumeGetSharedSecretToken ) {
             this.merchantKeyProvider = new RestMerchantKeyProvider(merchantKeyUri, assumeGetSharedSecretToken);
+        } else if ( merchantKeyUri || assumeGetSharedSecretToken ) {
+            throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
         }
     }
 
