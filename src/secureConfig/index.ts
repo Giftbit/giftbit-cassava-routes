@@ -1,6 +1,8 @@
 import "babel-polyfill";
 import * as aws from "aws-sdk";
 export {AuthenticationConfig} from "./AuthenticationConfig";
+export {RolesConfig} from "./RolesConfig";
+export {AssumeScopeToken} from "./AssumeScopeToken";
 
 const region = process.env["AWS_REGION"] || "";
 
