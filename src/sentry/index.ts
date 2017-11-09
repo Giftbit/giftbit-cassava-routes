@@ -82,6 +82,10 @@ export interface AdditionalErrorNotificationContext {
 }
 
 export function sendErrorNotificaiton(err: Error, context: AdditionalErrorNotificationContext) {
+    if (!initialized) {
+        console.log(`Error notification service must be initialized. Attempted to send error: ${err}`);
+        throw new Error("Error notification service must be initialized");
+    }
     console.error(err);
     Raven.captureException(err, context);
 }
