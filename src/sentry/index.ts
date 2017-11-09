@@ -5,7 +5,7 @@ import {Router} from "cassava";
 let Raven = require('raven');
 let initialized = false;
 
-export function sentryLambdaWrapper<T>(apiKeyS3Bucket: string, apiKeyS3Key: string, router: Router, handler: (evt: T, ctx: awslambda.Context, callback: awslambda.Callback) => void): (evt: T, ctx: awslambda.Context, callback: awslambda.Callback) => void {
+export function errorNotificationWrapper<T>(apiKeyS3Bucket: string, apiKeyS3Key: string, router: Router, handler: (evt: T, ctx: awslambda.Context, callback: awslambda.Callback) => void): (evt: T, ctx: awslambda.Context, callback: awslambda.Callback) => void {
     return (evt: T, ctx: awslambda.Context, callback: awslambda.Callback): void => {
         init(apiKeyS3Bucket, apiKeyS3Key, ctx, router).catch(err => console.error("sentry init error", err));
         handler(evt, ctx, callback);
@@ -23,7 +23,7 @@ export async function init(apiKeyS3Bucket: string, apiKeyS3Key: string, ctx: aws
     return initAdvanced(ctx, router, {
         apiKeyS3Bucket: apiKeyS3Bucket,
         apiKeyS3Key: apiKeyS3Key,
-        tags: getDefaultTags(ctx)
+        context: {tags: getDefaultTags(ctx)}
     });
 }
 
@@ -62,9 +62,10 @@ export async function initAdvanced(ctx: awslambda.Context, router: Router, optio
         Raven.config(apiKeyObject.apiKey).install();
     }
 
+    options.context.extra = ctx;
     router.errorHandler = (err: Error) => {
-        Raven.captureException(err, {tags: options.tags, extra: ctx});
-        throw err
+        console.error(err);
+        Raven.captureException(err, options.context);
     };
     initialized = true;
 }
@@ -72,5 +73,15 @@ export async function initAdvanced(ctx: awslambda.Context, router: Router, optio
 export interface AsyncBufferedSentryLoggerOptions {
     apiKeyS3Bucket?: string;
     apiKeyS3Key?: string;
+    context?: AdditionalErrorNotificationContext
+}
+
+export interface AdditionalErrorNotificationContext {
     tags?: { [key: string]: string; };
+    extra?: { [key: string]: any; };
+}
+
+export function sendErrorNotificaiton(err: Error, context: AdditionalErrorNotificationContext) {
+    console.error(err);
+    Raven.captureException(err, context);
 }
