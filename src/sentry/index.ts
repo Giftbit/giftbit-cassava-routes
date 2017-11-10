@@ -76,12 +76,19 @@ export interface AsyncBufferedSentryLoggerOptions {
     context?: AdditionalErrorNotificationContext
 }
 
+/**
+ * This passes up a blob of additional context specific to sentry. The keys tags and extra are unique to sentry.
+ * tags - appear at a top level of sentry event. ie tags: { aws_account: "ACCOUNT_XYZ", function_name: "lambda-service-x"}
+ * extra - appear as a JSON object within the sentry event. ie
+ *    let ctx: awslambda.Context;
+ *    extra: ctx;
+ */
 export interface AdditionalErrorNotificationContext {
-    tags?: { [key: string]: string; };
-    extra?: { [key: string]: any; };
+    tags?: { [key: string]: string; }; //
+    extra?: { [key: string]: any; }; //
 }
 
-export function sendErrorNotificaiton(err: Error, context: AdditionalErrorNotificationContext) {
+export function sendErrorNotificaiton(err: Error, context?: AdditionalErrorNotificationContext) {
     if (!initialized) {
         console.log(`Error notification service must be initialized. Attempted to send error: ${err}`);
         throw new Error("Error notification service must be initialized");
