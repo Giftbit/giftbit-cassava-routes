@@ -79,9 +79,7 @@ export interface AsyncBufferedSentryLoggerOptions {
 /**
  * This passes up a blob of additional context specific to sentry. The keys tags and extra are unique to sentry.
  * tags - appear at a top level of sentry event. ie tags: { aws_account: "ACCOUNT_XYZ", function_name: "lambda-service-x"}
- * extra - appear as a JSON object within the sentry event. ie
- *    let ctx: awslambda.Context;
- *    extra: ctx;
+ * extra - appear as a JSON object within the sentry event. This is a good place to dump extra information. ie if you had a awslambda.Context you could set extra to be that context.
  */
 export interface AdditionalErrorNotificationContext {
     tags?: { [key: string]: string; }; //
