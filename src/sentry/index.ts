@@ -89,7 +89,7 @@ export interface AdditionalErrorNotificationContext {
 
     /** Appear as a JSON object within the sentry event. This is a good place to capture 'extra' information.
      * ie
-     *      let ctx : awslambda.Context;
+     *      let ctx: awslambda.Context;
      *      extra: ctx;
      */
     extra?: { [key: string]: any; };
