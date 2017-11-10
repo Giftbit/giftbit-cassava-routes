@@ -84,7 +84,7 @@ export interface AdditionalErrorNotificationContext {
     /**
      * Appears at the top level of the sentry event.
      * ie
-     *      tags: { aws_account: "ACCOUNT_XYZ", function_name: "lambda-service-x"};
+     *      tags = { aws_account: "ACCOUNT_XYZ", function_name: "lambda-service-x"};
      */
     tags?: { [key: string]: string; };
 
@@ -92,8 +92,7 @@ export interface AdditionalErrorNotificationContext {
      * Appears as a JSON object within the sentry event.
      * This is a good place to capture 'extra' information.
      * ie
-     *      let ctx: awslambda.Context;
-     *      extra: ctx;
+     *      extra = <awslambda.Context> amazonContext;
      */
     extra?: { [key: string]: any; };
 }
