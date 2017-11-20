@@ -23,27 +23,27 @@
   },
   "homepage": "https://github.com/Giftbit/giftbit-cassava#readme",
   "peerDependencies": {
-    "cassava": "^1.0.0"
+    "cassava": "^1.1.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^0.0.17",
-    "@types/chai": "^4.0.4",
+    "@types/aws-lambda": "^0.0.21",
+    "@types/chai": "^4.0.5",
     "@types/cookie": "^0.3.1",
     "@types/jsonwebtoken": "^7.2.3",
-    "@types/mocha": "^2.2.43",
-    "@types/node": "^8.0.8",
-    "aws-sdk": "^2.81.0",
+    "@types/mocha": "^2.2.44",
+    "@types/node": "^8.0.53",
+    "aws-sdk": "^2.153.0",
     "chai": "^4.1.2",
     "mocha": "^4.0.1",
     "rimraf": "^2.6.2",
     "ts-node": "^3.1.0",
-    "tslint": "^5.5.0",
+    "tslint": "^2.6.1",
     "typescript": "^2.4.1"
   },
   "dependencies": {
     "@types/superagent": "^3.5.6",
     "jsonwebtoken": "^8.1.0",
     "raven": "^2.2.1",
-    "superagent": "^3.8.0"
+    "superagent": "^3.8.1"
   }
 }
