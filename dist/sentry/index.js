@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const aws = require("aws-sdk");
-let Raven = require('raven');
+const Raven = require("raven");
 let initialized = false;
 function errorNotificationWrapper(apiKeyS3Bucket, apiKeyS3Key, router, handler) {
     return (evt, ctx, callback) => {
