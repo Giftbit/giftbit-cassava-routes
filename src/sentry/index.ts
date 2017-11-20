@@ -1,8 +1,8 @@
 import * as awslambda from "aws-lambda";
 import * as aws from "aws-sdk";
+import * as Raven from "raven";
 import {Router} from "cassava";
 
-let Raven = require('raven');
 let initialized = false;
 
 export function errorNotificationWrapper<T>(apiKeyS3Bucket: string, apiKeyS3Key: string, router: Router, handler: (evt: T, ctx: awslambda.Context, callback: awslambda.Callback) => void): (evt: T, ctx: awslambda.Context, callback: awslambda.Callback) => void {
@@ -73,7 +73,7 @@ export async function initAdvanced(ctx: awslambda.Context, router: Router, optio
 export interface AsyncBufferedSentryLoggerOptions {
     apiKeyS3Bucket?: string;
     apiKeyS3Key?: string;
-    context?: AdditionalErrorNotificationContext
+    context?: AdditionalErrorNotificationContext;
 }
 
 /**
