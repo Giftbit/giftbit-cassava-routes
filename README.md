@@ -8,9 +8,9 @@ Bump the version in package.json. Versioning guidelines:
 ```
 current = vA.B.C
 
-minor update -> vA.B.C+1
-new feature -> vA.b+1.0
-breaking change -> vA+1.0.0
+major: breaking change -> vA+1.0.0
+minor: new feature -> vA.b+1.0
+micro: bug fix -> vA.B.C+1
 ```
 
 In your project run: `npm build` 
