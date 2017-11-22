@@ -6,11 +6,11 @@ How to publish a new release in git after your pull request has been approved.
  
 Bump the version in package.json. Versioning guidelines:
 ```
-current = vA.B.C
+current = 1.0.0
 
-major: breaking change -> vA+1.0.0
-minor: new feature -> vA.b+1.0
-micro: bug fix -> vA.B.C+1
+major: breaking change -> 2.0.0
+minor: new feature -> 1.1.0
+micro: bug fix -> 1.0.1
 ```
 
 In your project run: `npm build` 
