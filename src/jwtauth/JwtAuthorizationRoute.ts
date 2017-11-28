@@ -111,13 +111,10 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
     }
 
     private async getVerifiedAuthorizationBadge(token: string): Promise<AuthorizationBadge> {
-        const secret = await this.authConfigPromise;
-        if (!secret) {
-            throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
-        }
         const unverifiedAuthPayload = (jwt.decode(token) as any);
-
-        if ( unverifiedAuthPayload.iss === "MERCHANT" ) {
+        if (!unverifiedAuthPayload) {
+            throw new Error("Cannot be decoded as a JWT.");
+        } else if (unverifiedAuthPayload.iss === "MERCHANT") {
             const secret = await this.merchantKeyProvider.getMerchantKey(token);
             const authPayload = jwt.verify(token, secret, {
                 ignoreExpiration: false,
@@ -130,6 +127,10 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             };
             return new AuthorizationBadge(shopperPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
         } else {
+            const secret = await this.authConfigPromise;
+            if (!secret) {
+                throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
+            }
             const authPayload = jwt.verify(token, secret.secretkey, {
                 ignoreExpiration: false,
                 algorithms: ["HS256"]

@@ -107,12 +107,11 @@ class JwtAuthorizationRoute {
     }
     getVerifiedAuthorizationBadge(token) {
         return __awaiter(this, void 0, void 0, function* () {
-            const secret = yield this.authConfigPromise;
-            if (!secret) {
-                throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
-            }
             const unverifiedAuthPayload = jwt.decode(token);
-            if (unverifiedAuthPayload.iss === "MERCHANT") {
+            if (!unverifiedAuthPayload) {
+                throw new Error("Cannot be decoded as a JWT.");
+            }
+            else if (unverifiedAuthPayload.iss === "MERCHANT") {
                 const secret = yield this.merchantKeyProvider.getMerchantKey(token);
                 const authPayload = jwt.verify(token, secret, {
                     ignoreExpiration: false,
@@ -122,6 +121,10 @@ class JwtAuthorizationRoute {
                 return new AuthorizationBadge_1.AuthorizationBadge(shopperPayload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
             }
             else {
+                const secret = yield this.authConfigPromise;
+                if (!secret) {
+                    throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
+                }
                 const authPayload = jwt.verify(token, secret.secretkey, {
                     ignoreExpiration: false,
                     algorithms: ["HS256"]
