@@ -114,6 +114,9 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         if (!unverifiedAuthPayload) {
             throw new Error("Cannot be decoded as a JWT.");
         } else if (unverifiedAuthPayload.iss === "MERCHANT") {
+            if (!this.merchantKeyProvider) {
+                throw new Error("Merchant key provider has not been configured.  Not accepting merchant signed tokens.");
+            }
             const secret = await this.merchantKeyProvider.getMerchantKey(token);
             const authPayload = jwt.verify(token, secret, {
                 ignoreExpiration: false,

@@ -112,6 +112,9 @@ class JwtAuthorizationRoute {
                 throw new Error("Cannot be decoded as a JWT.");
             }
             else if (unverifiedAuthPayload.iss === "MERCHANT") {
+                if (!this.merchantKeyProvider) {
+                    throw new Error("Merchant key provider has not been configured.  Not accepting merchant signed tokens.");
+                }
                 const secret = yield this.merchantKeyProvider.getMerchantKey(token);
                 const authPayload = jwt.verify(token, secret, {
                     ignoreExpiration: false,
