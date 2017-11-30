@@ -18,15 +18,14 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
     readonly merchantKeyProvider: MerchantKeyProvider;
 
-    constructor(
-        private readonly authConfigPromise: Promise<AuthenticationConfig>,
-        private readonly rolesConfigPromise?: Promise<RolesConfig>,
-        private readonly merchantKeyUri?: string,
-        private readonly assumeGetSharedSecretToken?: Promise<AssumeScopeToken>) {
+    constructor(private readonly authConfigPromise: Promise<AuthenticationConfig>,
+                private readonly rolesConfigPromise?: Promise<RolesConfig>,
+                private readonly merchantKeyUri?: string,
+                private readonly assumeGetSharedSecretToken?: Promise<AssumeScopeToken>) {
 
-        if ( merchantKeyUri && assumeGetSharedSecretToken ) {
+        if (merchantKeyUri && assumeGetSharedSecretToken) {
             this.merchantKeyProvider = new RestMerchantKeyProvider(merchantKeyUri, assumeGetSharedSecretToken);
-        } else if ( merchantKeyUri || assumeGetSharedSecretToken ) {
+        } else if (merchantKeyUri || assumeGetSharedSecretToken) {
             throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
         }
     }
@@ -121,7 +120,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
                 algorithms: ["HS256"]
             }) as object;
             const shopperPayload = {
-                ... authPayload,
+                ...authPayload,
                 scopes: [] as string [],
                 roles: ["shopper"]
             };
