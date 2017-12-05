@@ -213,6 +213,10 @@ export class AuthorizationBadge {
 
         return effectiveScopes;
     }
+
+    isTestUser(): boolean {
+        return this.giftbitUserId && this.giftbitUserId.endsWith("-TEST");
+    }
 }
 
 function getParentScope(scope: string): string {
