@@ -172,6 +172,9 @@ class AuthorizationBadge {
         });
         return effectiveScopes;
     }
+    isTestUser() {
+        return this.giftbitUserId && this.giftbitUserId.endsWith("-TEST");
+    }
 }
 exports.AuthorizationBadge = AuthorizationBadge;
 function getParentScope(scope) {
