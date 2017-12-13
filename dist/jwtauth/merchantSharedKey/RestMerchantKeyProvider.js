@@ -13,11 +13,14 @@ class RestMerchantKeyProvider {
     constructor(merchantKeyUri, assumeGetSharedSecretToken) {
         this.merchantKeyUri = merchantKeyUri;
         this.assumeGetSharedSecretToken = assumeGetSharedSecretToken;
+        if (!/^https?:\/\//.test(this.merchantKeyUri)) {
+            this.merchantKeyUri = "https://" + this.merchantKeyUri;
+        }
     }
     getMerchantKey(token) {
         return __awaiter(this, void 0, void 0, function* () {
             const tokenPayload = token.split(".")[1];
-            const storageTokenConfig = (yield this.assumeGetSharedSecretToken);
+            const storageTokenConfig = yield this.assumeGetSharedSecretToken;
             const resp = yield superagent("GET", this.merchantKeyUri)
                 .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
                 .set("AuthorizeAs", tokenPayload);
