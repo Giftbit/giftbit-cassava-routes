@@ -31,4 +31,5 @@ export declare class AuthorizationBadge {
     isBadgeAuthorized(scope: string): boolean;
     requireScopes(...scopes: string[]): void;
     private getEffectiveScopes(rolesConfig);
+    isTestUser(): boolean;
 }

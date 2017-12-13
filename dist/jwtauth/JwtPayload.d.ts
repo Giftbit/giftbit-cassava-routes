@@ -23,3 +23,6 @@ export interface JwtPayload {
     roles?: string[];
     scopes?: string[];
 }
+export declare namespace JwtPayload {
+    function isTestUser(payload: JwtPayload): boolean;
+}

@@ -23,3 +23,9 @@ export interface JwtPayload {
     roles?: string[];
     scopes?: string[];
 }
+
+export namespace JwtPayload {
+    export function isTestUser(payload: JwtPayload): boolean {
+        return payload && payload.g && payload.g.gui && payload.g.gui.endsWith("-TEST");
+    }
+}
