@@ -80,17 +80,35 @@ class JwtAuthorizationRoute {
     getToken(evt) {
         const authorization = evt.getHeader("Authorization");
         if (authorization) {
-            if (/^Bearer /.test(authorization)) {
-                return authorization.substring(7);
+            if (!/^Bearer /.test(authorization)) {
+                this.logErrors && console.log(`authorization header doesn't start with 'Bearer ' Authorization=${this.redact(authorization)}`);
+                throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
             }
-            this.logErrors && console.log(`authorization header doesn't start with 'Bearer ': ${authorization}`);
-            throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
+            return authorization.substring(7);
         }
-        if (evt.getHeader("X-Requested-With") === "XMLHttpRequest" && evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
+        if (evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
+            if (evt.getHeader("X-Requested-With") !== "XMLHttpRequest") {
+                this.logErrors && console.log(`authorization cookies set but X-Requested-With not set X-Requested-With='${evt.getHeader("X-Requested-With")}'`);
+                throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
+            }
             return `${evt.cookies["gb_jwt_session"]}.${evt.cookies["gb_jwt_signature"]}`;
         }
-        this.logErrors && console.log(`request doesn't have Authorization header or X-Requested-With header (${authorization}) with Cookies gb_jwt_session (${evt.cookies["gb_jwt_session"]}) and gb_jwt_signature (${evt.cookies["gb_jwt_signature"]})`);
+        this.logErrors && console.log(`could not find auth Authorization=${this.redact(authorization)} Cookies gb_jwt_session='${evt.cookies["gb_jwt_session"]}' gb_jwt_signature=${this.redact(evt.cookies["gb_jwt_signature"])}`);
         throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
+    }
+    redact(s) {
+        if (s === undefined) {
+            return "undefined";
+        }
+        else if (s === null) {
+            return "null";
+        }
+        else if (s === "") {
+            return "''";
+        }
+        else {
+            return `[redacted length=${s.length}]`;
+        }
     }
     getAuthorizeAs(evt) {
         try {
