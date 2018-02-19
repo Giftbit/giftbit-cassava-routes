@@ -17,6 +17,7 @@ export class AuthorizationBadge {
     teamMemberId: string;
     serviceId: string;
     shopperId: string;
+    additionalIds: {[name: string]: string};
 
     audience: string;
     issuer: string;
@@ -42,7 +43,7 @@ export class AuthorizationBadge {
                 this.serviceId = jwtPayload.g.si;
                 this.shopperId = jwtPayload.g.spi;
             }
-
+            this.additionalIds = jwtPayload.ids;
             this.audience = jwtPayload.aud;
             this.issuer = jwtPayload.iss;
             this.roles = jwtPayload.roles || [];
@@ -94,6 +95,9 @@ export class AuthorizationBadge {
         }
         if (this.shopperId) {
             payload.g.spi = this.shopperId;
+        }
+        if (this.additionalIds) {
+            payload.ids = this.additionalIds;
         }
         if (this.audience) {
             payload.aud = this.audience;
