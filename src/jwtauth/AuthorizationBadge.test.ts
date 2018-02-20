@@ -403,7 +403,10 @@ describe("AuthorizationBadge", () => {
                     "securityManager",
                     "teamAdmin",
                     "webPortal"
-                ]
+                ],
+                "metadata": {
+                    "stripeShopperToken": "tok_visa"
+                }
             };
 
             const auth = new AuthorizationBadge(originalPayload);
@@ -413,7 +416,7 @@ describe("AuthorizationBadge", () => {
 
             chai.assert.deepEqual(originalPayload, newPayload);
             chai.assert.deepEqual(originalHeader, newHeader);
-        })
+        });
     });
 
     describe("assumeJwtIdentity()", () => {
