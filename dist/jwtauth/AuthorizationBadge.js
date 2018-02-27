@@ -23,6 +23,7 @@ class AuthorizationBadge {
                 this.serviceId = jwtPayload.g.si;
                 this.shopperId = jwtPayload.g.spi;
             }
+            this.metadata = jwtPayload.metadata;
             this.audience = jwtPayload.aud;
             this.issuer = jwtPayload.iss;
             this.roles = jwtPayload.roles || [];
@@ -71,6 +72,9 @@ class AuthorizationBadge {
         }
         if (this.shopperId) {
             payload.g.spi = this.shopperId;
+        }
+        if (this.metadata) {
+            payload.metadata = this.metadata;
         }
         if (this.audience) {
             payload.aud = this.audience;

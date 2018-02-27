@@ -14,6 +14,9 @@ export declare class AuthorizationBadge {
     teamMemberId: string;
     serviceId: string;
     shopperId: string;
+    metadata: {
+        [name: string]: any;
+    };
     audience: string;
     issuer: string;
     issuedAtTime: Date;
