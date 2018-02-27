@@ -14,6 +14,7 @@ export interface JwtPayload {
         tmi?: string;
         spi?: string;
     };
+    metadata?: {[name: string]: any};
     aud?: string;
     iss?: string;
     iat?: string | number;
