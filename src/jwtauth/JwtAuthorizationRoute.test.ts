@@ -517,7 +517,6 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.isTrue(secondHandlerCalled);
         });
 
-
         it("verifies a valid merchant JWT with metadata", async() => {
             let secondHandlerCalled = false;
             router.route(jwtAuthorizationRoute);
