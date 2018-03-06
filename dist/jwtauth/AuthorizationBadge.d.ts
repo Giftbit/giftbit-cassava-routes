@@ -28,6 +28,7 @@ export declare class AuthorizationBadge {
     effectiveScopes: string[];
     constructor(jwtPayload?: JwtPayload, rolesConfig?: RolesConfig);
     getJwtPayload(): JwtPayload;
+    getAuthorizeAsPayload(): string;
     sign(secret: string): string;
     assumeJwtIdentity(jwtPayload: JwtPayload): AuthorizationBadge;
     requireIds(...ids: ("giftbitUserId" | "merchantId" | "cardId" | "programId" | "recipientId" | "templateId" | "teamMemberId" | "serviceId")[]): void;

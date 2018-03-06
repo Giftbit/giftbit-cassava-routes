@@ -37,7 +37,7 @@ class JwtAuthorizationRoute {
                 const auth = yield this.getVerifiedAuthorizationBadge(token);
                 const authHeaderPayload = jwt.decode(token, { complete: true }).header;
                 const authHeader = new AuthorizationHeader_1.AuthorizationHeader(authHeaderPayload);
-                const authAs = this.getAuthorizeAs(evt);
+                const authAs = this.getAuthorizeAsHeaderValue(evt);
                 if (authAs) {
                     evt.meta["auth"] = auth.assumeJwtIdentity(authAs);
                 }
@@ -110,7 +110,7 @@ class JwtAuthorizationRoute {
             return `[redacted length=${s.length}]`;
         }
     }
-    getAuthorizeAs(evt) {
+    getAuthorizeAsHeaderValue(evt) {
         try {
             const base64 = evt.getHeader("AuthorizeAs");
             if (!base64) {
@@ -153,6 +153,9 @@ class JwtAuthorizationRoute {
                 return new AuthorizationBadge_1.AuthorizationBadge(authPayload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
             }
         });
+    }
+    getEncryptedPayload(evt) {
+        return evt.meta["auth-token"].split(".")[1];
     }
 }
 exports.JwtAuthorizationRoute = JwtAuthorizationRoute;
