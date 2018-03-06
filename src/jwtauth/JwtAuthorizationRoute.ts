@@ -156,8 +156,4 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             return new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
         }
     }
-
-    getEncryptedPayload(evt: cassava.RouterEvent): string {
-        return evt.meta["auth-token"].split(".")[1];
-    }
 }
