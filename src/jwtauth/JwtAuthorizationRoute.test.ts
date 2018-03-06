@@ -517,6 +517,37 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.isTrue(secondHandlerCalled);
         });
 
+        it("verifies a valid merchant JWT with metadata", async() => {
+            let secondHandlerCalled = false;
+            router.route(jwtAuthorizationRoute);
+            router.route({
+                matches: () => true,
+                handle: async evt => {
+                    const auth = evt.meta["auth"] as AuthorizationBadge;
+                    chai.assert.isObject(auth);
+                    chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
+                    chai.assert.sameMembers(auth.roles, ["shopper"]);
+                    chai.assert.sameMembers(auth.scopes, []);
+                    chai.assert.instanceOf(auth.issuedAtTime, Date);
+                    chai.assert.equal(auth.issuedAtTime.getTime(), 1481573500000);
+                    chai.assert.deepEqual(auth.metadata, {stripeCustomerId: "cus_abc123"}, `expected auth.metadata to be set and match what was in JWT`);
+                    secondHandlerCalled = true;
+                    return {body: {}};
+                }
+            });
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwibWV0YWRhdGEiOnsic3RyaXBlQ3VzdG9tZXJJZCI6ImN1c19hYmMxMjMifSwiaWF0IjoxNDgxNTczNTAwLCJpc3MiOiJNRVJDSEFOVCIsInNjb3BlcyI6WyJzb21lU2NvcGUiXSwicm9sZXMiOlsic29tZVJvbGUiXX0.BvqAi2CKNStVqWCbUvZQw6_7LTqslcmyrMbCLFuRVc4"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+            chai.assert.isTrue(secondHandlerCalled);
+        });
+
         it("rejects a JWT with a bad signature in the Authorization header", async() => {
             (jwtAuthorizationRoute as any).merchantKeyProvider = new StaticKey("someDifferentSecret");
             router.route(jwtAuthorizationRoute);
