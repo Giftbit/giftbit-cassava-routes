@@ -18,7 +18,6 @@ describe("JwtAuthorizationRoute", () => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        const jwt = "eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY";
         jwtAuthorizationRoute.logErrors = false;
         router.route(jwtAuthorizationRoute);
         router.route({
@@ -43,7 +42,7 @@ describe("JwtAuthorizationRoute", () => {
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
             headers: {
-                Authorization: `Bearer ${jwt}`
+                Authorization: `Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY`
             }
         }));
 
