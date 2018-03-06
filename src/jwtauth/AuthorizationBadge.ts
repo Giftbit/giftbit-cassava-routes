@@ -124,6 +124,10 @@ export class AuthorizationBadge {
         return payload;
     }
 
+    getAuthorizeAsPayload(): string {
+        return Buffer.from(JSON.stringify(this.getJwtPayload()), "utf-8").toString("base64");
+    }
+
     sign(secret: string): string {
         return jwt.sign(this.getJwtPayload(), secret, {
             algorithm: "HS256",

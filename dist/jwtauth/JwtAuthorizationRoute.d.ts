@@ -19,6 +19,6 @@ export declare class JwtAuthorizationRoute implements cassava.routes.Route {
     matches(evt: cassava.RouterEvent): boolean;
     private getToken(evt);
     private redact(s);
-    private getAuthorizeAs(evt);
+    private getAuthorizeAsHeaderValue(evt);
     private getVerifiedAuthorizationBadge(token);
 }

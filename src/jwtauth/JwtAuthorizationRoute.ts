@@ -38,7 +38,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             const authHeaderPayload = (jwt.decode(token, {complete: true}) as any).header;
             const authHeader = new AuthorizationHeader(authHeaderPayload);
 
-            const authAs = this.getAuthorizeAs(evt);
+            const authAs = this.getAuthorizeAsHeaderValue(evt);
             if (authAs) {
                 evt.meta["auth"] = auth.assumeJwtIdentity(authAs);
             } else {
@@ -112,7 +112,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         }
     }
 
-    private getAuthorizeAs(evt: cassava.RouterEvent): JwtPayload {
+    private getAuthorizeAsHeaderValue(evt: cassava.RouterEvent): JwtPayload {
         try {
             const base64 = evt.getHeader("AuthorizeAs");
             if (!base64) {

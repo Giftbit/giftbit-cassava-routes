@@ -4,6 +4,7 @@ import {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
 import {AuthorizationBadge} from "./AuthorizationBadge";
 import {StaticKey} from "./merchantSharedKey/StaticKey";
 import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
+import * as jsonwebtoken from "jsonwebtoken";
 
 describe("JwtAuthorizationRoute", () => {
 
@@ -28,6 +29,12 @@ describe("JwtAuthorizationRoute", () => {
                 chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
                 chai.assert.instanceOf(auth.issuedAtTime, Date);
                 chai.assert.equal(auth.issuedAtTime.getTime(), 1481573500000);
+
+                const encodedPayload: string = auth.getAuthorizeAsPayload();
+                // For whatever reason the encoded payload is slightly different than the encoded payload created by `jsonwebtoken`.
+                // Because of this, this test parses the encoded payload back into an object and makes sure the contents match.
+                const decodedObject = JSON.parse(Buffer.from(encodedPayload, "base64").toString("utf-8"));
+                chai.assert.deepEqual(auth.getJwtPayload(), decodedObject, `expected objects to match`);
                 secondHandlerCalled = true;
                 return {body: {}};
             }
