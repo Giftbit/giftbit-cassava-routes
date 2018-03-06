@@ -21,5 +21,4 @@ export declare class JwtAuthorizationRoute implements cassava.routes.Route {
     private redact(s);
     private getAuthorizeAsHeaderValue(evt);
     private getVerifiedAuthorizationBadge(token);
-    getEncryptedPayload(evt: cassava.RouterEvent): string;
 }

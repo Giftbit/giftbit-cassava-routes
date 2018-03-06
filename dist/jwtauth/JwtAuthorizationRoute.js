@@ -154,9 +154,6 @@ class JwtAuthorizationRoute {
             }
         });
     }
-    getEncryptedPayload(evt) {
-        return evt.meta["auth-token"].split(".")[1];
-    }
 }
 exports.JwtAuthorizationRoute = JwtAuthorizationRoute;
 //# sourceMappingURL=JwtAuthorizationRoute.js.map
