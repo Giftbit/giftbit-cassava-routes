@@ -14,14 +14,15 @@ class AuthorizationBadge {
         if (jwtPayload) {
             if (jwtPayload.g) {
                 this.giftbitUserId = jwtPayload.g.gui;
-                this.cardId = jwtPayload.g.gci;
-                this.recipientId = jwtPayload.g.gri;
-                this.templateId = jwtPayload.g.gti;
-                this.merchantId = jwtPayload.g.gmi;
-                this.programId = jwtPayload.g.pid;
                 this.teamMemberId = jwtPayload.g.tmi;
+                this.merchantId = jwtPayload.g.gmi;
+                this.cardId = jwtPayload.g.gci;
+                this.templateId = jwtPayload.g.gti;
+                this.programId = jwtPayload.g.pid;
+                this.contactUserSuppliedId = jwtPayload.g.cui;
+                this.shopperId = jwtPayload.g.shi;
+                this.contactId = jwtPayload.g.coi;
                 this.serviceId = jwtPayload.g.si;
-                this.shopperId = jwtPayload.g.spi;
             }
             this.metadata = jwtPayload.metadata;
             this.audience = jwtPayload.aud;
@@ -34,11 +35,15 @@ class AuthorizationBadge {
                 this.issuedAtTime = new Date(jwtPayload.iat * 1000);
             }
             else if (typeof jwtPayload.iat === "string") {
+                // This is off-spec but something we did in the past.
                 this.issuedAtTime = new Date(jwtPayload.iat);
             }
             if (typeof jwtPayload.exp === "number") {
                 this.expirationTime = new Date(jwtPayload.exp * 1000);
             }
+        }
+        if (this.issuer === "MERCHANT") {
+            this.sanitizeMerchantSigned();
         }
         this.effectiveScopes = this.getEffectiveScopes(rolesConfig);
     }
@@ -49,29 +54,32 @@ class AuthorizationBadge {
         if (this.giftbitUserId) {
             payload.g.gui = this.giftbitUserId;
         }
-        if (this.cardId) {
-            payload.g.gci = this.cardId;
-        }
-        if (this.recipientId) {
-            payload.g.gri = this.recipientId;
-        }
-        if (this.templateId) {
-            payload.g.gti = this.templateId;
+        if (this.teamMemberId) {
+            payload.g.tmi = this.teamMemberId;
         }
         if (this.merchantId) {
             payload.g.gmi = this.merchantId;
         }
+        if (this.cardId) {
+            payload.g.gci = this.cardId;
+        }
+        if (this.templateId) {
+            payload.g.gti = this.templateId;
+        }
         if (this.programId) {
             payload.g.pid = this.programId;
         }
-        if (this.teamMemberId) {
-            payload.g.tmi = this.teamMemberId;
+        if (this.contactUserSuppliedId) {
+            payload.g.cui = this.contactUserSuppliedId;
+        }
+        if (this.shopperId) {
+            payload.g.shi = this.shopperId;
+        }
+        if (this.contactId) {
+            payload.g.coi = this.contactId;
         }
         if (this.serviceId) {
             payload.g.si = this.serviceId;
-        }
-        if (this.shopperId) {
-            payload.g.spi = this.shopperId;
         }
         if (this.metadata) {
             payload.metadata = this.metadata;
@@ -143,6 +151,18 @@ class AuthorizationBadge {
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
             }
         }
+    }
+    /**
+     * Save the merchant from themselves.
+     */
+    sanitizeMerchantSigned() {
+        this.merchantId = this.giftbitUserId;
+        if (!this.contactUserSuppliedId && !this.shopperId && !this.contactId) {
+            this.shopperId = "defaultShopper";
+            this.contactId = "defaultShopper";
+        }
+        this.roles = ["shopper"]; // This might be a whitelist in the future.
+        this.scopes.length = 0;
     }
     getEffectiveScopes(rolesConfig) {
         const effectiveScopes = [];

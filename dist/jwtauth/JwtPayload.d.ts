@@ -5,14 +5,15 @@
 export interface JwtPayload {
     g?: {
         gui?: string;
-        gci?: string;
-        gri?: string;
-        gti?: string;
-        gmi?: string;
-        pid?: string;
-        si?: string;
         tmi?: string;
-        spi?: string;
+        gmi?: string;
+        gci?: string;
+        gti?: string;
+        pid?: string;
+        cui?: string;
+        shi?: string;
+        coi?: string;
+        si?: string;
     };
     metadata?: {
         [name: string]: any;

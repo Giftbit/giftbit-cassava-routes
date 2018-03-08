@@ -1,7 +1,7 @@
 import * as cassava from "cassava";
 import * as jwt from "jsonwebtoken";
 import {JwtPayload} from "./JwtPayload";
-import {RolesConfig} from "../secureConfig/RolesConfig";
+import {RolesConfig} from "../secureConfig";
 
 /**
  * Expanded representation of the JWT payload.
@@ -9,14 +9,15 @@ import {RolesConfig} from "../secureConfig/RolesConfig";
 export class AuthorizationBadge {
 
     giftbitUserId: string;
+    teamMemberId: string;
     merchantId: string;
     cardId: string;
-    programId: string;
-    recipientId: string;
     templateId: string;
-    teamMemberId: string;
-    serviceId: string;
+    programId: string;
+    contactUserSuppliedId: string;
     shopperId: string;
+    contactId: string;
+    serviceId: string;
     metadata: {[name: string]: any};
 
     audience: string;
@@ -34,14 +35,15 @@ export class AuthorizationBadge {
         if (jwtPayload) {
             if (jwtPayload.g) {
                 this.giftbitUserId = jwtPayload.g.gui;
-                this.cardId = jwtPayload.g.gci;
-                this.recipientId = jwtPayload.g.gri;
-                this.templateId = jwtPayload.g.gti;
-                this.merchantId = jwtPayload.g.gmi;
-                this.programId = jwtPayload.g.pid;
                 this.teamMemberId = jwtPayload.g.tmi;
+                this.merchantId = jwtPayload.g.gmi;
+                this.cardId = jwtPayload.g.gci;
+                this.templateId = jwtPayload.g.gti;
+                this.programId = jwtPayload.g.pid;
+                this.contactUserSuppliedId = jwtPayload.g.cui;
+                this.shopperId = jwtPayload.g.shi;
+                this.contactId = jwtPayload.g.coi;
                 this.serviceId = jwtPayload.g.si;
-                this.shopperId = jwtPayload.g.spi;
             }
             this.metadata = jwtPayload.metadata;
             this.audience = jwtPayload.aud;
@@ -54,12 +56,17 @@ export class AuthorizationBadge {
             if (typeof jwtPayload.iat === "number") {
                 this.issuedAtTime = new Date(jwtPayload.iat * 1000);
             } else if (typeof jwtPayload.iat === "string") {
+                // This is off-spec but something we did in the past.
                 this.issuedAtTime = new Date(jwtPayload.iat);
             }
 
             if (typeof jwtPayload.exp === "number") {
                 this.expirationTime = new Date(jwtPayload.exp * 1000);
             }
+        }
+
+        if (this.issuer === "MERCHANT") {
+            this.sanitizeMerchantSigned();
         }
 
         this.effectiveScopes = this.getEffectiveScopes(rolesConfig);
@@ -72,29 +79,32 @@ export class AuthorizationBadge {
         if (this.giftbitUserId) {
             payload.g.gui = this.giftbitUserId;
         }
-        if (this.cardId) {
-            payload.g.gci = this.cardId;
-        }
-        if (this.recipientId) {
-            payload.g.gri = this.recipientId;
-        }
-        if (this.templateId) {
-            payload.g.gti = this.templateId;
+        if (this.teamMemberId) {
+            payload.g.tmi = this.teamMemberId;
         }
         if (this.merchantId) {
             payload.g.gmi = this.merchantId;
         }
+        if (this.cardId) {
+            payload.g.gci = this.cardId;
+        }
+        if (this.templateId) {
+            payload.g.gti = this.templateId;
+        }
         if (this.programId) {
             payload.g.pid = this.programId;
         }
-        if (this.teamMemberId) {
-            payload.g.tmi = this.teamMemberId;
+        if (this.contactUserSuppliedId) {
+            payload.g.cui = this.contactUserSuppliedId;
+        }
+        if (this.shopperId) {
+            payload.g.shi = this.shopperId;
+        }
+        if (this.contactId) {
+            payload.g.coi = this.contactId;
         }
         if (this.serviceId) {
             payload.g.si = this.serviceId;
-        }
-        if (this.shopperId) {
-            payload.g.spi = this.shopperId;
         }
         if (this.metadata) {
             payload.metadata = this.metadata;
@@ -155,7 +165,11 @@ export class AuthorizationBadge {
         return badge;
     }
 
-    requireIds(...ids: ("giftbitUserId" | "merchantId" | "cardId" | "programId" | "recipientId" | "templateId" | "teamMemberId" | "serviceId")[]): void {
+    /**
+     * Require that the given IDs are set on the badge.
+     * eg: requireIds("giftbitUserId", "merchantId");
+     */
+    requireIds(...ids: ("giftbitUserId" | "teamMemberId" | "merchantId" | "cardId" | "templateId" | "programId" | "contactUserSuppliedId" | "shopperId" | "contactId" | "serviceId")[]): void {
         for (let id of ids) {
             if (!this[id]) {
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
@@ -172,12 +186,29 @@ export class AuthorizationBadge {
         return false;
     }
 
+    /**
+     * Require that the given scopes are authorized on the badge.
+     * Throws a RestError if they are not.
+     */
     requireScopes(...scopes: string[]): void {
         for (let scope of scopes) {
             if (!this.isBadgeAuthorized(scope)) {
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
             }
         }
+    }
+
+    /**
+     * Save the merchant from themselves.
+     */
+    private sanitizeMerchantSigned(): void {
+        this.merchantId = this.giftbitUserId;
+        if (!this.contactUserSuppliedId && !this.shopperId && !this.contactId) {
+            this.shopperId = "defaultShopper";
+            this.contactId = "defaultShopper";
+        }
+        this.roles = ["shopper"];   // This might be a whitelist in the future.
+        this.scopes.length = 0;
     }
 
     private getEffectiveScopes(rolesConfig: RolesConfig): string[] {

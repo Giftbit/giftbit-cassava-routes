@@ -129,31 +129,29 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         const unverifiedAuthPayload = (jwt.decode(token) as any);
         if (!unverifiedAuthPayload) {
             throw new Error("Cannot be decoded as a JWT.");
-        } else if (unverifiedAuthPayload.iss === "MERCHANT") {
+        }
+
+        let secret: string;
+        if (unverifiedAuthPayload.iss === "MERCHANT") {
             if (!this.merchantKeyProvider) {
                 throw new Error("Merchant key provider has not been configured.  Not accepting merchant signed tokens.");
             }
-            const secret = await this.merchantKeyProvider.getMerchantKey(token);
-            const authPayload = jwt.verify(token, secret, {
-                ignoreExpiration: false,
-                algorithms: ["HS256"]
-            }) as object;
-            const shopperPayload = {
-                ...authPayload,
-                scopes: [] as string [],
-                roles: ["shopper"]
-            };
-            return new AuthorizationBadge(shopperPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
-        } else {
-            const secret = await this.authConfigPromise;
+            secret = await this.merchantKeyProvider.getMerchantKey(token);
             if (!secret) {
+                throw new Error("Secret is null.  Check that the merchant has set a shared secret.");
+            }
+        } else {
+            const secretObj = await this.authConfigPromise;
+            if (!secretObj) {
                 throw new Error("Secret is null.  Check that the source of the secret can be accessed.");
             }
-            const authPayload = jwt.verify(token, secret.secretkey, {
-                ignoreExpiration: false,
-                algorithms: ["HS256"]
-            }) as object;
-            return new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+            secret = secretObj.secretkey;
         }
+
+        const authPayload = jwt.verify(token, secret, {
+            ignoreExpiration: false,
+            algorithms: ["HS256"]
+        }) as object;
+        return new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
     }
 }

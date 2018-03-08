@@ -1,19 +1,20 @@
 import { JwtPayload } from "./JwtPayload";
-import { RolesConfig } from "../secureConfig/RolesConfig";
+import { RolesConfig } from "../secureConfig";
 /**
  * Expanded representation of the JWT payload.
  */
 export declare class AuthorizationBadge {
     private readonly rolesConfig;
     giftbitUserId: string;
+    teamMemberId: string;
     merchantId: string;
     cardId: string;
-    programId: string;
-    recipientId: string;
     templateId: string;
-    teamMemberId: string;
-    serviceId: string;
+    programId: string;
+    contactUserSuppliedId: string;
     shopperId: string;
+    contactId: string;
+    serviceId: string;
     metadata: {
         [name: string]: any;
     };
@@ -31,9 +32,13 @@ export declare class AuthorizationBadge {
     getAuthorizeAsPayload(): string;
     sign(secret: string): string;
     assumeJwtIdentity(jwtPayload: JwtPayload): AuthorizationBadge;
-    requireIds(...ids: ("giftbitUserId" | "merchantId" | "cardId" | "programId" | "recipientId" | "templateId" | "teamMemberId" | "serviceId")[]): void;
+    requireIds(...ids: (keyof this)[]): void;
     isBadgeAuthorized(scope: string): boolean;
     requireScopes(...scopes: string[]): void;
+    /**
+     * Save the merchant from themselves.
+     */
+    private sanitizeMerchantSigned();
     private getEffectiveScopes(rolesConfig);
     isTestUser(): boolean;
 }
