@@ -165,7 +165,11 @@ export class AuthorizationBadge {
         return badge;
     }
 
-    requireIds(...ids: (keyof this)[]): void {
+    /**
+     * Require that the given IDs are set on the badge.
+     * eg: requireIds("giftbitUserId", "merchantId");
+     */
+    requireIds(...ids: ("giftbitUserId" | "teamMemberId" | "merchantId" | "cardId" | "templateId" | "programId" | "contactUserSuppliedId" | "shopperId" | "contactId" | "serviceId")[]): void {
         for (let id of ids) {
             if (!this[id]) {
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
@@ -182,6 +186,10 @@ export class AuthorizationBadge {
         return false;
     }
 
+    /**
+     * Require that the given scopes are authorized on the badge.
+     * Throws a RestError if they are not.
+     */
     requireScopes(...scopes: string[]): void {
         for (let scope of scopes) {
             if (!this.isBadgeAuthorized(scope)) {
