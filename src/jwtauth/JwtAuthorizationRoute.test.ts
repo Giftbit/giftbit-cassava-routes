@@ -473,7 +473,7 @@ describe("JwtAuthorizationRoute", () => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
                     chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
-                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
+                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.sameMembers(auth.roles, ["shopper"]);
                     chai.assert.sameMembers(auth.scopes, []);
                     chai.assert.instanceOf(auth.issuedAtTime, Date);
@@ -503,7 +503,7 @@ describe("JwtAuthorizationRoute", () => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
                     chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
-                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
+                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.sameMembers(auth.roles, ["shopper"]);
                     chai.assert.sameMembers(auth.scopes, []);
                     chai.assert.instanceOf(auth.issuedAtTime, Date);
@@ -533,7 +533,7 @@ describe("JwtAuthorizationRoute", () => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
                     chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
-                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
+                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.sameMembers(auth.roles, ["shopper"]);
                     chai.assert.sameMembers(auth.scopes, []);
                     chai.assert.instanceOf(auth.issuedAtTime, Date);
@@ -585,7 +585,6 @@ describe("JwtAuthorizationRoute", () => {
         });
 
         it("rejects an expired JWT", async() => {
-
             router.route(jwtAuthorizationRoute);
 
             const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
@@ -607,7 +606,7 @@ describe("JwtAuthorizationRoute", () => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
                     chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
-                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
+                    chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.sameMembers(auth.roles, ["shopper"]);
                     chai.assert.sameMembers(auth.scopes, []);
                     chai.assert.instanceOf(auth.issuedAtTime, Date);

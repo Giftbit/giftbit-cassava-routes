@@ -383,7 +383,10 @@ describe("AuthorizationBadge", () => {
                 "g": {
                     "gui": "user-f7ddcbbfe0e741c688993da35669a47b",
                     "gmi": "user-f7ddcbbfe0e741c688993da35669a47b",
-                    "tmi": "user-f7ddcbbfe0e741c688993da35669a47b"
+                    "tmi": "user-f7ddcbbfe0e741c688993da35669a47b",
+                    "cui": "customer",
+                    "shi": "sssssh",
+                    "coi": "don't play coi with me"
                 },
                 "aud": "API_KEY",
                 "iss": "SERVICES_V1",
