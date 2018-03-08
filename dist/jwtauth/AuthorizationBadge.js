@@ -156,14 +156,13 @@ class AuthorizationBadge {
      * Save the merchant from themselves.
      */
     sanitizeMerchantSigned() {
-        const rolesWhitelist = ["shopper"];
         this.merchantId = this.giftbitUserId;
         if (!this.contactUserSuppliedId && !this.shopperId && !this.contactId) {
             this.shopperId = "defaultShopper";
             this.contactId = "defaultShopper";
         }
-        this.roles = this.roles.filter(role => rolesWhitelist.indexOf(role) !== -1);
-        this.scopes = [];
+        this.roles = ["shopper"]; // This might be a whitelist in the future.
+        this.scopes.length = 0;
     }
     getEffectiveScopes(rolesConfig) {
         const effectiveScopes = [];

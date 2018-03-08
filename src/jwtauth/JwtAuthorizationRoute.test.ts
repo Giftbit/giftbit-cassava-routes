@@ -445,7 +445,6 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     describe("merchant self signing support", () => {
-
         let staticKey: StaticKey;
         let router: cassava.Router;
         let jwtAuthorizationRoute: JwtAuthorizationRoute;

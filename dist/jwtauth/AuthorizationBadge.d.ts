@@ -1,5 +1,5 @@
 import { JwtPayload } from "./JwtPayload";
-import { RolesConfig } from "../secureConfig/RolesConfig";
+import { RolesConfig } from "../secureConfig";
 /**
  * Expanded representation of the JWT payload.
  */
