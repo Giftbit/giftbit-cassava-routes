@@ -32,8 +32,16 @@ export declare class AuthorizationBadge {
     getAuthorizeAsPayload(): string;
     sign(secret: string): string;
     assumeJwtIdentity(jwtPayload: JwtPayload): AuthorizationBadge;
-    requireIds(...ids: (keyof this)[]): void;
+    /**
+     * Require that the given IDs are set on the badge.
+     * eg: requireIds("giftbitUserId", "merchantId");
+     */
+    requireIds(...ids: ("giftbitUserId" | "teamMemberId" | "merchantId" | "cardId" | "templateId" | "programId" | "contactUserSuppliedId" | "shopperId" | "contactId" | "serviceId")[]): void;
     isBadgeAuthorized(scope: string): boolean;
+    /**
+     * Require that the given scopes are authorized on the badge.
+     * Throws a RestError if they are not.
+     */
     requireScopes(...scopes: string[]): void;
     /**
      * Save the merchant from themselves.

@@ -130,6 +130,10 @@ class AuthorizationBadge {
         badge.effectiveScopes = badge.effectiveScopes.filter(scope => scope !== "ASSUME");
         return badge;
     }
+    /**
+     * Require that the given IDs are set on the badge.
+     * eg: requireIds("giftbitUserId", "merchantId");
+     */
     requireIds(...ids) {
         for (let id of ids) {
             if (!this[id]) {
@@ -145,6 +149,10 @@ class AuthorizationBadge {
         }
         return false;
     }
+    /**
+     * Require that the given scopes are authorized on the badge.
+     * Throws a RestError if they are not.
+     */
     requireScopes(...scopes) {
         for (let scope of scopes) {
             if (!this.isBadgeAuthorized(scope)) {
