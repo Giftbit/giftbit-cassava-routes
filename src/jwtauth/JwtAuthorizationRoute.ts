@@ -61,9 +61,9 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             }
 
             // Refresh this cookie.
-            if (!resp.cookies["gb_jwt_session"]) {
-                resp.cookies["gb_jwt_session"] = {
-                    value: evt.cookies["gb_jwt_session"],
+            if (!resp.cookies["gb_jwt_signature"]) {
+                resp.cookies["gb_jwt_signature"] = {
+                    value: evt.cookies["gb_jwt_signature"],
                     options: {
                         path: "/",
                         maxAge: 30 * 60

@@ -1,6 +1,6 @@
 {
   "name": "giftbit-cassava-routes",
-  "version": "5.5.2",
+  "version": "5.5.3",
   "description": "Private Giftbit routes for use with Cassava.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
