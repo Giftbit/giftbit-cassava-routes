@@ -61,12 +61,14 @@ class JwtAuthorizationRoute {
                     resp.cookies = {};
                 }
                 // Refresh this cookie.
-                if (!resp.cookies["gb_jwt_session"]) {
-                    resp.cookies["gb_jwt_session"] = {
-                        value: evt.cookies["gb_jwt_session"],
+                if (!resp.cookies["gb_jwt_signature"]) {
+                    resp.cookies["gb_jwt_signature"] = {
+                        value: evt.cookies["gb_jwt_signature"],
                         options: {
+                            httpOnly: true,
+                            maxAge: 30 * 60,
                             path: "/",
-                            maxAge: 30 * 60
+                            secure: true,
                         }
                     };
                 }
