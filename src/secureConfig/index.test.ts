@@ -9,7 +9,7 @@ describe("secureConfig", () => {
         let sandbox: sinon.SinonSandbox;
 
         beforeEach(function () {
-            sandbox = sinon.sandbox.create();
+            sandbox = sinon.createSandbox();
             (secureConfig as any).logErrors = false;
         });
 
