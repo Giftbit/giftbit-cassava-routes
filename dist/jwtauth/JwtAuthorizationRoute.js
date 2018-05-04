@@ -56,7 +56,7 @@ class JwtAuthorizationRoute {
     }
     postProcess(evt, resp) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (evt.getHeader("X-Requested-With") === "XMLHttpRequest" && evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
+            if (evt.headersLowerCase["x-requested-with"] === "XMLHttpRequest" && evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
                 if (!resp.cookies) {
                     resp.cookies = {};
                 }
@@ -80,7 +80,7 @@ class JwtAuthorizationRoute {
         return true;
     }
     getToken(evt) {
-        const authorization = evt.getHeader("Authorization");
+        const authorization = evt.headersLowerCase["authorization"];
         if (authorization) {
             if (!/^Bearer /.test(authorization)) {
                 this.logErrors && console.log(`authorization header doesn't start with 'Bearer ' Authorization=${this.redact(authorization)}`);
@@ -89,8 +89,8 @@ class JwtAuthorizationRoute {
             return authorization.substring(7);
         }
         if (evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
-            if (evt.getHeader("X-Requested-With") !== "XMLHttpRequest") {
-                this.logErrors && console.log(`authorization cookies set but X-Requested-With not set X-Requested-With='${evt.getHeader("X-Requested-With")}'`);
+            if (evt.headersLowerCase["x-requested-with"] !== "XMLHttpRequest") {
+                this.logErrors && console.log(`authorization cookies set but X-Requested-With not set X-Requested-With='${evt.headersLowerCase["x-requested-with"]}'`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
             }
             return `${evt.cookies["gb_jwt_session"]}.${evt.cookies["gb_jwt_signature"]}`;
@@ -114,7 +114,7 @@ class JwtAuthorizationRoute {
     }
     getAuthorizeAsHeaderValue(evt) {
         try {
-            const base64 = evt.getHeader("AuthorizeAs");
+            const base64 = evt.headersLowerCase["authorizeas"];
             if (!base64) {
                 return null;
             }
