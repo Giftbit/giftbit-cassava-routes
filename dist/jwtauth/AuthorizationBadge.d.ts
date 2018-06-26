@@ -4,7 +4,7 @@ import { RolesConfig } from "../secureConfig";
  * Expanded representation of the JWT payload.
  */
 export declare class AuthorizationBadge {
-    private readonly rolesConfig;
+    private readonly rolesConfig?;
     giftbitUserId: string;
     teamMemberId: string;
     merchantId: string;
@@ -46,7 +46,7 @@ export declare class AuthorizationBadge {
     /**
      * Save the merchant from themselves.
      */
-    private sanitizeMerchantSigned();
-    private getEffectiveScopes(rolesConfig);
+    private sanitizeMerchantSigned;
+    private getEffectiveScopes;
     isTestUser(): boolean;
 }

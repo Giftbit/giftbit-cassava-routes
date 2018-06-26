@@ -8,34 +8,49 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const aws = require("aws-sdk");
 const Raven = require("raven");
 let initialized = false;
-function errorNotificationWrapper(apiKeyS3Bucket, apiKeyS3Key, router, handler) {
-    return (evt, ctx, callback) => {
-        init(apiKeyS3Bucket, apiKeyS3Key, ctx, router).catch(err => console.error("sentry init error", err));
-        handler(evt, ctx, callback);
+let logger = console.error.bind(console);
+let ravenContext = {
+    tags: {},
+    extra: {}
+};
+/**
+ * Create a handler function that wraps the given handler and initializes Sentry.
+ * @param options
+ * @returns a Lambda handler
+ */
+function wrapLambdaHandler(options) {
+    if (!options.router && !options.handler) {
+        throw new Error("Must specify one of router or handler.");
+    }
+    const handler = options.handler || options.router.getLambdaHandler();
+    installApiKey(options).then(() => initialized = true, err => console.error("sentry init error", err));
+    if (options.router) {
+        options.router.errorHandler = sendErrorNotification;
+    }
+    if (options.logger) {
+        logger = options.logger;
+    }
+    return (evt, ctx) => {
+        ravenContext.tags = Object.assign({}, getDefaultTags(ctx), options.additionalTags);
+        ravenContext.extra = ctx;
+        return handler(evt, ctx);
     };
 }
-exports.errorNotificationWrapper = errorNotificationWrapper;
-function init(apiKeyS3Bucket, apiKeyS3Key, ctx, router) {
+exports.wrapLambdaHandler = wrapLambdaHandler;
+function installApiKey(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!apiKeyS3Bucket) {
-            throw new Error("apiKeyS3Bucket not set");
+        const secureConfig = yield options.secureConfig;
+        if (!secureConfig.apiKey) {
+            throw new Error("Stored Sentry API key object missing `apiKey` member.");
         }
-        if (!apiKeyS3Key) {
-            throw new Error("apiKeyS3Key not set");
-        }
-        return initAdvanced(ctx, router, {
-            apiKeyS3Bucket: apiKeyS3Bucket,
-            apiKeyS3Key: apiKeyS3Key,
-            context: { tags: getDefaultTags(ctx) }
-        });
+        Raven.config(secureConfig.apiKey).install();
     });
 }
-exports.init = init;
 function getDefaultTags(ctx) {
     let tags = {
+        // I think we did it this way for consistency with some existing thing.
         functionname: ctx.functionName
     };
     const accountMatcher = /arn:aws:lambda:([a-z0-9-]+):([0-9]+):.*/.exec(ctx.invokedFunctionArn);
@@ -45,44 +60,17 @@ function getDefaultTags(ctx) {
     }
     return tags;
 }
-exports.getDefaultTags = getDefaultTags;
-function initAdvanced(ctx, router, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (initialized) {
-            return;
-        }
-        if (options.apiKeyS3Bucket && options.apiKeyS3Key) {
-            const s3 = new aws.S3({
-                apiVersion: "2006-03-01",
-                credentials: new aws.EnvironmentCredentials("AWS"),
-                signatureVersion: "v4"
-            });
-            const s3Object = yield s3.getObject({
-                Bucket: options.apiKeyS3Bucket,
-                Key: options.apiKeyS3Key
-            }).promise();
-            const apiKeyObject = JSON.parse(s3Object.Body.toString());
-            if (!apiKeyObject.apiKey) {
-                throw new Error("Stored Sentry API key object missing `apiKey` member.");
-            }
-            Raven.config(apiKeyObject.apiKey).install();
-        }
-        options.context.extra = ctx;
-        router.errorHandler = (err) => {
-            console.error(err);
-            Raven.captureException(err, options.context);
-        };
-        initialized = true;
-    });
-}
-exports.initAdvanced = initAdvanced;
-function sendErrorNotificaiton(err, context) {
+/**
+ * Send an error notification to Sentry.
+ * @param {Error | string} err
+ */
+function sendErrorNotification(err) {
+    logger(err);
     if (!initialized) {
-        console.log(`Error notification service must be initialized. Attempted to send error: ${err}`);
-        throw new Error("Error notification service must be initialized");
+        logger("Error notification service is not initialized.");
+        return;
     }
-    console.error(err);
-    Raven.captureException(err, context);
+    Raven.captureException(err, ravenContext);
 }
-exports.sendErrorNotificaiton = sendErrorNotificaiton;
+exports.sendErrorNotification = sendErrorNotification;
 //# sourceMappingURL=index.js.map

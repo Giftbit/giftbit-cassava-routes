@@ -5,9 +5,9 @@ import { AssumeScopeToken } from "../secureConfig/AssumeScopeToken";
 import { MerchantKeyProvider } from "./merchantSharedKey/MerchantKeyProvider";
 export declare class JwtAuthorizationRoute implements cassava.routes.Route {
     private readonly authConfigPromise;
-    private readonly rolesConfigPromise;
-    private readonly merchantKeyUri;
-    private readonly assumeGetSharedSecretToken;
+    private readonly rolesConfigPromise?;
+    private readonly merchantKeyUri?;
+    private readonly assumeGetSharedSecretToken?;
     /**
      * Log errors to console.
      */
@@ -17,8 +17,8 @@ export declare class JwtAuthorizationRoute implements cassava.routes.Route {
     handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse>;
     postProcess(evt: cassava.RouterEvent, resp: cassava.RouterResponse): Promise<cassava.RouterResponse>;
     matches(evt: cassava.RouterEvent): boolean;
-    private getToken(evt);
-    private redact(s);
-    private getAuthorizeAsHeaderValue(evt);
-    private getVerifiedAuthorizationBadge(token);
+    private getToken;
+    private redact;
+    private getAuthorizeAsHeaderValue;
+    private getVerifiedAuthorizationBadge;
 }
