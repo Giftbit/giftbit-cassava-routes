@@ -1,5 +1,5 @@
 import * as superagent from "superagent";
-import {AssumeScopeToken} from "../../secureConfig/AssumeScopeToken";
+import {AssumeScopeToken} from "../../secureConfig";
 import {MerchantKeyProvider} from "./MerchantKeyProvider";
 
 export class RestMerchantKeyProvider implements MerchantKeyProvider {

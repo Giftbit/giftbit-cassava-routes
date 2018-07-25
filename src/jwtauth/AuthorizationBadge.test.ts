@@ -175,7 +175,7 @@ describe("AuthorizationBadge", () => {
         });
     });
 
-    describe("isBadgeAuthorized()", () => {
+    describe("hasScope()", () => {
         it("verifies an exact match", () => {
             const badge: AuthorizationBadge = new AuthorizationBadge({
                 scopes: [
@@ -184,8 +184,8 @@ describe("AuthorizationBadge", () => {
                 ]
             });
 
-            chai.assert.isTrue(badge.isBadgeAuthorized("lightrailV1:transaction:create:drawdown"));
-            chai.assert.isTrue(badge.isBadgeAuthorized("lightrailV1:foo:bar:baz"));
+            chai.assert.isTrue(badge.hasScope("lightrailV1:transaction:create:drawdown"));
+            chai.assert.isTrue(badge.hasScope("lightrailV1:foo:bar:baz"));
         });
 
         it("verifies more powerful scopes", () => {
@@ -196,8 +196,8 @@ describe("AuthorizationBadge", () => {
                 ]
             });
 
-            chai.assert.isTrue(badge.isBadgeAuthorized("lightrailV1:transaction:create:drawdown"));
-            chai.assert.isTrue(badge.isBadgeAuthorized("lightrailV1:foo:bar:baz"));
+            chai.assert.isTrue(badge.hasScope("lightrailV1:transaction:create:drawdown"));
+            chai.assert.isTrue(badge.hasScope("lightrailV1:foo:bar:baz"));
         });
 
         it("does not verify anything else", () => {
@@ -208,19 +208,19 @@ describe("AuthorizationBadge", () => {
                 ]
             });
 
-            chai.assert.isFalse(badge.isBadgeAuthorized(undefined));
-            chai.assert.isFalse(badge.isBadgeAuthorized(null));
-            chai.assert.isFalse(badge.isBadgeAuthorized(""));
-            chai.assert.isFalse(badge.isBadgeAuthorized(14901 as any));
-            chai.assert.isFalse(badge.isBadgeAuthorized("lightrailV1"));
-            chai.assert.isFalse(badge.isBadgeAuthorized("lightrailV1:transaction"));
-            chai.assert.isFalse(badge.isBadgeAuthorized("lightrailV1:transaction:create"));
-            chai.assert.isFalse(badge.isBadgeAuthorized("lightrailV1:Transaction:create:drawdown"));
-            chai.assert.isFalse(badge.isBadgeAuthorized("transaction:create:drawdown"));
-            chai.assert.isFalse(badge.isBadgeAuthorized("create:drawdown"));
-            chai.assert.isFalse(badge.isBadgeAuthorized("drawdown"));
-            chai.assert.isFalse(badge.isBadgeAuthorized("lightrailV1:foo:create:drawdown"));
-            chai.assert.isFalse(badge.isBadgeAuthorized("lightrailV1:foo:create:baz"));
+            chai.assert.isFalse(badge.hasScope(undefined));
+            chai.assert.isFalse(badge.hasScope(null));
+            chai.assert.isFalse(badge.hasScope(""));
+            chai.assert.isFalse(badge.hasScope(14901 as any));
+            chai.assert.isFalse(badge.hasScope("lightrailV1"));
+            chai.assert.isFalse(badge.hasScope("lightrailV1:transaction"));
+            chai.assert.isFalse(badge.hasScope("lightrailV1:transaction:create"));
+            chai.assert.isFalse(badge.hasScope("lightrailV1:Transaction:create:drawdown"));
+            chai.assert.isFalse(badge.hasScope("transaction:create:drawdown"));
+            chai.assert.isFalse(badge.hasScope("create:drawdown"));
+            chai.assert.isFalse(badge.hasScope("drawdown"));
+            chai.assert.isFalse(badge.hasScope("lightrailV1:foo:create:drawdown"));
+            chai.assert.isFalse(badge.hasScope("lightrailV1:foo:create:baz"));
         });
     });
 
@@ -384,8 +384,6 @@ describe("AuthorizationBadge", () => {
                     "gui": "user-f7ddcbbfe0e741c688993da35669a47b",
                     "gmi": "user-f7ddcbbfe0e741c688993da35669a47b",
                     "tmi": "user-f7ddcbbfe0e741c688993da35669a47b",
-                    "cui": "customer",
-                    "shi": "sssssh",
                     "coi": "don't play coi with me"
                 },
                 "aud": "API_KEY",
@@ -468,8 +466,8 @@ describe("AuthorizationBadge", () => {
                 ]
             });
 
-            chai.assert.isFalse(auth2.isBadgeAuthorized("ASSUME"), `not in ${JSON.stringify(auth2.scopes)} or ${JSON.stringify(auth2.effectiveScopes)}`);
-            chai.assert.equal(auth2.giftbitUserId, "user-123-TEST");
+            chai.assert.isFalse(auth2.hasScope("ASSUME"), `not in ${JSON.stringify(auth2.scopes)} or ${JSON.stringify(auth2.effectiveScopes)}`);
+            chai.assert.equal(auth2.userId, "user-123-TEST");
             chai.assert.equal(auth2.merchantId, "user-123-TEST");
             chai.assert.equal(auth2.uniqueIdentifier, "badge-cca79a9a42134e609aafdc8e9482854e");
             chai.assert.equal(auth2.parentUniqueIdentifier, "badge-2");

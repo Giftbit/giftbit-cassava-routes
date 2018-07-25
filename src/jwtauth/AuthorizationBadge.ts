@@ -8,16 +8,14 @@ import {RolesConfig} from "../secureConfig";
  */
 export class AuthorizationBadge {
 
-    giftbitUserId: string;
+    userId: string;
     teamMemberId: string;
     merchantId: string;
-    cardId: string;
-    templateId: string;
+    valueId: string;
     programId: string;
-    contactUserSuppliedId: string;
-    shopperId: string;
     contactId: string;
     serviceId: string;
+
     metadata: {[name: string]: any};
 
     audience: string;
@@ -34,14 +32,11 @@ export class AuthorizationBadge {
     constructor(jwtPayload?: JwtPayload, private readonly rolesConfig?: RolesConfig) {
         if (jwtPayload) {
             if (jwtPayload.g) {
-                this.giftbitUserId = jwtPayload.g.gui;
+                this.userId = jwtPayload.g.gui;
                 this.teamMemberId = jwtPayload.g.tmi;
                 this.merchantId = jwtPayload.g.gmi;
-                this.cardId = jwtPayload.g.gci;
-                this.templateId = jwtPayload.g.gti;
+                this.valueId = jwtPayload.g.gvi;
                 this.programId = jwtPayload.g.pid;
-                this.contactUserSuppliedId = jwtPayload.g.cui;
-                this.shopperId = jwtPayload.g.shi;
                 this.contactId = jwtPayload.g.coi;
                 this.serviceId = jwtPayload.g.si;
             }
@@ -76,8 +71,8 @@ export class AuthorizationBadge {
         const payload: JwtPayload = {
             g: {}
         };
-        if (this.giftbitUserId) {
-            payload.g.gui = this.giftbitUserId;
+        if (this.userId) {
+            payload.g.gui = this.userId;
         }
         if (this.teamMemberId) {
             payload.g.tmi = this.teamMemberId;
@@ -85,20 +80,11 @@ export class AuthorizationBadge {
         if (this.merchantId) {
             payload.g.gmi = this.merchantId;
         }
-        if (this.cardId) {
-            payload.g.gci = this.cardId;
-        }
-        if (this.templateId) {
-            payload.g.gti = this.templateId;
+        if (this.valueId) {
+            payload.g.gvi = this.valueId;
         }
         if (this.programId) {
             payload.g.pid = this.programId;
-        }
-        if (this.contactUserSuppliedId) {
-            payload.g.cui = this.contactUserSuppliedId;
-        }
-        if (this.shopperId) {
-            payload.g.shi = this.shopperId;
         }
         if (this.contactId) {
             payload.g.coi = this.contactId;
@@ -154,7 +140,7 @@ export class AuthorizationBadge {
         const j = this.getJwtPayload();
         j.g = {
             ... jwtPayload.g,
-            si: this.giftbitUserId
+            si: this.userId
         };
         j.parentJti = jwtPayload.jti;
 
@@ -167,9 +153,9 @@ export class AuthorizationBadge {
 
     /**
      * Require that the given IDs are set on the badge.
-     * eg: requireIds("giftbitUserId", "merchantId");
+     * eg: requireIds("userId", "merchantId");
      */
-    requireIds(...ids: ("giftbitUserId" | "teamMemberId" | "merchantId" | "cardId" | "templateId" | "programId" | "contactUserSuppliedId" | "shopperId" | "contactId" | "serviceId")[]): void {
+    requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId")[]): void {
         for (let id of ids) {
             if (!this[id]) {
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
@@ -177,7 +163,17 @@ export class AuthorizationBadge {
         }
     }
 
+    /**
+     * @deprecated use hasScope, because the name is clearer
+     */
     isBadgeAuthorized(scope: string): boolean {
+        return this.hasScope(scope);
+    }
+
+    /**
+     * Returns true if this badge contains the given scope or any parent of the scope.
+     */
+    hasScope(scope: string): boolean {
         for (; scope; scope = getParentScope(scope)) {
             if (this.effectiveScopes.indexOf(scope) !== -1) {
                 return true;
@@ -187,14 +183,24 @@ export class AuthorizationBadge {
     }
 
     /**
+     * Returns true if the badge has all the given scopes.
+     */
+    hasScopes(...scopes: string[]): boolean {
+        for (let scope of scopes) {
+            if (!this.hasScope(scope)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Require that the given scopes are authorized on the badge.
      * Throws a RestError if they are not.
      */
     requireScopes(...scopes: string[]): void {
-        for (let scope of scopes) {
-            if (!this.isBadgeAuthorized(scope)) {
-                throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
-            }
+        if (!this.hasScopes(...scopes)) {
+            throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
         }
     }
 
@@ -202,9 +208,8 @@ export class AuthorizationBadge {
      * Save the merchant from themselves.
      */
     private sanitizeMerchantSigned(): void {
-        this.merchantId = this.giftbitUserId;
-        if (!this.contactUserSuppliedId && !this.shopperId && !this.contactId) {
-            this.shopperId = "defaultShopper";
+        this.merchantId = this.userId;
+        if (!this.contactId) {
             this.contactId = "defaultShopper";
         }
         this.roles = ["shopper"];   // This might be a whitelist in the future.
@@ -254,7 +259,7 @@ export class AuthorizationBadge {
     }
 
     isTestUser(): boolean {
-        return this.giftbitUserId && this.giftbitUserId.endsWith("-TEST");
+        return this.userId && this.userId.endsWith("-TEST");
     }
 }
 

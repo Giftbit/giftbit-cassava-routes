@@ -28,7 +28,7 @@ export interface WrapLambdaHandlerOptions {
  */
 export function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any, ctx: awslambda.Context) => Promise<any> {
     if (!options.router && !options.handler) {
-        throw new Error("Must specify one of router or handler.")
+        throw new Error("Must specify one of router or handler.");
     }
     const handler: (evt: any, ctx: awslambda.Context) => Promise<any> = options.handler || options.router.getLambdaHandler() as any;
 

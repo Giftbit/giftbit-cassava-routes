@@ -25,7 +25,7 @@ describe("JwtAuthorizationRoute", () => {
             handle: async evt => {
                 const auth = evt.meta["auth"] as AuthorizationBadge;
                 chai.assert.isObject(auth);
-                chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                chai.assert.equal(auth.userId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                 chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
                 chai.assert.instanceOf(auth.issuedAtTime, Date);
                 chai.assert.equal(auth.issuedAtTime.getTime(), 1481573500000);
@@ -61,7 +61,7 @@ describe("JwtAuthorizationRoute", () => {
             handle: async evt => {
                 const auth = evt.meta["auth"] as AuthorizationBadge;
                 chai.assert.isObject(auth);
-                chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                chai.assert.equal(auth.userId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                 chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
                 chai.assert.instanceOf(auth.issuedAtTime, Date);
                 chai.assert.equal(auth.issuedAtTime.getTime(), 1481573500000);
@@ -93,7 +93,7 @@ describe("JwtAuthorizationRoute", () => {
             handle: async evt => {
                 const auth = evt.meta["auth"] as AuthorizationBadge;
                 chai.assert.isObject(auth);
-                chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                chai.assert.equal(auth.userId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                 chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad");
                 chai.assert.instanceOf(auth.issuedAtTime, Date);
                 chai.assert.equal(auth.issuedAtTime.getTime(), 1481573500000);
@@ -351,7 +351,7 @@ describe("JwtAuthorizationRoute", () => {
                 handle: async evt => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
-                    chai.assert.equal(auth.giftbitUserId, "user-123");
+                    chai.assert.equal(auth.userId, "user-123");
                     chai.assert.equal(auth.merchantId, "user-123");
                     chai.assert.equal(auth.uniqueIdentifier, "badge-1234");
                     chai.assert.equal(auth.serviceId, "service-1");
@@ -385,7 +385,7 @@ describe("JwtAuthorizationRoute", () => {
                 handle: async evt => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
-                    chai.assert.equal(auth.giftbitUserId, "user-9485b8758ca542b098a30ca4f7745d2a-TEST");
+                    chai.assert.equal(auth.userId, "user-9485b8758ca542b098a30ca4f7745d2a-TEST");
                     chai.assert.sameMembers(auth.scopes, [
                         "lightrailV1:token:read",
                         "lightrailV1:sharedSecret:read"
@@ -471,7 +471,7 @@ describe("JwtAuthorizationRoute", () => {
                 handle: async evt => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
-                    chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                    chai.assert.equal(auth.userId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.sameMembers(auth.roles, ["shopper"]);
                     chai.assert.sameMembers(auth.scopes, []);
@@ -501,7 +501,7 @@ describe("JwtAuthorizationRoute", () => {
                 handle: async evt => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
-                    chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                    chai.assert.equal(auth.userId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.sameMembers(auth.roles, ["shopper"]);
                     chai.assert.sameMembers(auth.scopes, []);
@@ -531,7 +531,7 @@ describe("JwtAuthorizationRoute", () => {
                 handle: async evt => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
-                    chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                    chai.assert.equal(auth.userId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.sameMembers(auth.roles, ["shopper"]);
                     chai.assert.sameMembers(auth.scopes, []);
@@ -604,7 +604,7 @@ describe("JwtAuthorizationRoute", () => {
                 handle: async evt => {
                     const auth = evt.meta["auth"] as AuthorizationBadge;
                     chai.assert.isObject(auth);
-                    chai.assert.equal(auth.giftbitUserId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+                    chai.assert.equal(auth.userId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.equal(auth.merchantId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
                     chai.assert.sameMembers(auth.roles, ["shopper"]);
                     chai.assert.sameMembers(auth.scopes, []);

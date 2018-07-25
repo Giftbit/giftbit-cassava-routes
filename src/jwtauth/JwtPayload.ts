@@ -7,11 +7,8 @@ export interface JwtPayload {
         gui?: string;
         tmi?: string;
         gmi?: string;
-        gci?: string;
-        gti?: string;
+        gvi?: string;
         pid?: string;
-        cui?: string;
-        shi?: string;
         coi?: string;
         si?: string;
     };

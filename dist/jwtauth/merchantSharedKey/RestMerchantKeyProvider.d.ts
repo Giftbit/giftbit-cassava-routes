@@ -1,4 +1,4 @@
-import { AssumeScopeToken } from "../../secureConfig/AssumeScopeToken";
+import { AssumeScopeToken } from "../../secureConfig";
 import { MerchantKeyProvider } from "./MerchantKeyProvider";
 export declare class RestMerchantKeyProvider implements MerchantKeyProvider {
     private readonly merchantKeyUri;

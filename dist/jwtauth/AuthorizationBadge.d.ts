@@ -5,14 +5,11 @@ import { RolesConfig } from "../secureConfig";
  */
 export declare class AuthorizationBadge {
     private readonly rolesConfig?;
-    giftbitUserId: string;
+    userId: string;
     teamMemberId: string;
     merchantId: string;
-    cardId: string;
-    templateId: string;
+    valueId: string;
     programId: string;
-    contactUserSuppliedId: string;
-    shopperId: string;
     contactId: string;
     serviceId: string;
     metadata: {
@@ -34,10 +31,21 @@ export declare class AuthorizationBadge {
     assumeJwtIdentity(jwtPayload: JwtPayload): AuthorizationBadge;
     /**
      * Require that the given IDs are set on the badge.
-     * eg: requireIds("giftbitUserId", "merchantId");
+     * eg: requireIds("userId", "merchantId");
      */
-    requireIds(...ids: ("giftbitUserId" | "teamMemberId" | "merchantId" | "cardId" | "templateId" | "programId" | "contactUserSuppliedId" | "shopperId" | "contactId" | "serviceId")[]): void;
+    requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId")[]): void;
+    /**
+     * @deprecated use hasScope, because the name is clearer
+     */
     isBadgeAuthorized(scope: string): boolean;
+    /**
+     * Returns true if this badge contains the given scope or any parent of the scope.
+     */
+    hasScope(scope: string): boolean;
+    /**
+     * Returns true if the badge has all the given scopes.
+     */
+    hasScopes(...scopes: string[]): boolean;
     /**
      * Require that the given scopes are authorized on the badge.
      * Throws a RestError if they are not.
