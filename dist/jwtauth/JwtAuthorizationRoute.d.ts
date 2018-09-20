@@ -1,19 +1,14 @@
 import * as cassava from "cassava";
-import { AuthenticationConfig } from "../secureConfig/AuthenticationConfig";
-import { RolesConfig } from "../secureConfig/RolesConfig";
-import { AssumeScopeToken } from "../secureConfig/AssumeScopeToken";
 import { MerchantKeyProvider } from "./merchantSharedKey/MerchantKeyProvider";
+import { JwtAuthorizationRouteOptions } from "./JwtAuthorizationRouteOptions";
 export declare class JwtAuthorizationRoute implements cassava.routes.Route {
+    private readonly options;
+    private readonly infoLogFunction?;
+    private readonly errorLogFunction?;
     private readonly authConfigPromise;
     private readonly rolesConfigPromise?;
-    private readonly merchantKeyUri?;
-    private readonly assumeGetSharedSecretToken?;
-    /**
-     * Log errors to console.
-     */
-    logErrors: boolean;
     readonly merchantKeyProvider: MerchantKeyProvider;
-    constructor(authConfigPromise: Promise<AuthenticationConfig>, rolesConfigPromise?: Promise<RolesConfig>, merchantKeyUri?: string, assumeGetSharedSecretToken?: Promise<AssumeScopeToken>);
+    constructor(options: JwtAuthorizationRouteOptions);
     handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse>;
     postProcess(evt: cassava.RouterEvent, resp: cassava.RouterResponse): Promise<cassava.RouterResponse>;
     matches(evt: cassava.RouterEvent): boolean;

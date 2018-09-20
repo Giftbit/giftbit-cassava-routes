@@ -14,19 +14,18 @@ const AuthorizationBadge_1 = require("./AuthorizationBadge");
 const AuthorizationHeader_1 = require("./AuthorizationHeader");
 const RestMerchantKeyProvider_1 = require("./merchantSharedKey/RestMerchantKeyProvider");
 class JwtAuthorizationRoute {
-    constructor(authConfigPromise, rolesConfigPromise, merchantKeyUri, assumeGetSharedSecretToken) {
-        this.authConfigPromise = authConfigPromise;
-        this.rolesConfigPromise = rolesConfigPromise;
-        this.merchantKeyUri = merchantKeyUri;
-        this.assumeGetSharedSecretToken = assumeGetSharedSecretToken;
-        /**
-         * Log errors to console.
-         */
-        this.logErrors = true;
-        if (merchantKeyUri && assumeGetSharedSecretToken) {
-            this.merchantKeyProvider = new RestMerchantKeyProvider_1.RestMerchantKeyProvider(merchantKeyUri, assumeGetSharedSecretToken);
+    constructor(options) {
+        this.options = options;
+        this.infoLogFunction = console.log.bind(console);
+        this.errorLogFunction = console.error.bind(console);
+        this.infoLogFunction = options.infoLogFunction || this.infoLogFunction;
+        this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
+        this.authConfigPromise = options.authConfigPromise;
+        this.rolesConfigPromise = options.rolesConfigPromise;
+        if (options.merchantKeyUri && options.assumeGetSharedSecretToken) {
+            this.merchantKeyProvider = new RestMerchantKeyProvider_1.RestMerchantKeyProvider(options.merchantKeyUri, options.assumeGetSharedSecretToken);
         }
-        else if (merchantKeyUri || assumeGetSharedSecretToken) {
+        else if (options.merchantKeyUri || options.assumeGetSharedSecretToken) {
             throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
         }
     }
@@ -46,9 +45,10 @@ class JwtAuthorizationRoute {
                 }
                 evt.meta["auth-token"] = token;
                 evt.meta["auth-header"] = authHeader;
+                this.infoLogFunction("JWT authorized", auth);
             }
             catch (e) {
-                this.logErrors && console.error("error verifying jwt", e);
+                this.errorLogFunction("error verifying jwt", e);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
             }
             return null;
@@ -83,19 +83,19 @@ class JwtAuthorizationRoute {
         const authorization = evt.headersLowerCase["authorization"];
         if (authorization) {
             if (!/^Bearer /.test(authorization)) {
-                this.logErrors && console.log(`authorization header doesn't start with 'Bearer ' Authorization=${this.redact(authorization)}`);
+                this.errorLogFunction(`authorization header doesn't start with 'Bearer ' Authorization=${this.redact(authorization)}`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
             }
             return authorization.substring(7);
         }
         if (evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
             if (evt.headersLowerCase["x-requested-with"] !== "XMLHttpRequest") {
-                this.logErrors && console.log(`authorization cookies set but X-Requested-With not set X-Requested-With='${evt.headersLowerCase["x-requested-with"]}'`);
+                this.errorLogFunction(`authorization cookies set but X-Requested-With not set X-Requested-With='${evt.headersLowerCase["x-requested-with"]}'`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
             }
             return `${evt.cookies["gb_jwt_session"]}.${evt.cookies["gb_jwt_signature"]}`;
         }
-        this.logErrors && console.log(`could not find auth Authorization=${this.redact(authorization)} Cookies gb_jwt_session='${evt.cookies["gb_jwt_session"]}' gb_jwt_signature=${this.redact(evt.cookies["gb_jwt_signature"])}`);
+        this.errorLogFunction(`could not find auth Authorization=${this.redact(authorization)} Cookies gb_jwt_session='${evt.cookies["gb_jwt_session"]}' gb_jwt_signature=${this.redact(evt.cookies["gb_jwt_signature"])}`);
         throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
     }
     redact(s) {
