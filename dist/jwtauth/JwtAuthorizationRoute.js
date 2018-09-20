@@ -152,7 +152,11 @@ class JwtAuthorizationRoute {
                 ignoreExpiration: false,
                 algorithms: ["HS256"]
             });
-            return new AuthorizationBadge_1.AuthorizationBadge(authPayload, this.rolesConfigPromise ? yield this.rolesConfigPromise : null);
+            return new AuthorizationBadge_1.AuthorizationBadge(authPayload, {
+                rolesConfig: this.rolesConfigPromise ? yield this.rolesConfigPromise : null,
+                infoLogFunction: this.infoLogFunction,
+                errorLogFunction: this.errorLogFunction
+            });
         });
     }
 }

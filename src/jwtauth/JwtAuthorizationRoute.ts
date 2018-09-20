@@ -156,6 +156,10 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             ignoreExpiration: false,
             algorithms: ["HS256"]
         }) as object;
-        return new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+        return new AuthorizationBadge(authPayload, {
+            rolesConfig: this.rolesConfigPromise ? await this.rolesConfigPromise : null,
+            infoLogFunction: this.infoLogFunction,
+            errorLogFunction: this.errorLogFunction
+        });
     }
 }
