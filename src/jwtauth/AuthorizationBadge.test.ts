@@ -10,33 +10,35 @@ describe("AuthorizationBadge", () => {
                 scopes: ["wildwest:okcorral:whisky:sipping"],
                 roles: ["DocHoliday", "VirgilEarp"]
             }, {
-                roles: [
-                    {
-                        name: "DocHoliday",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:gunfighter",
-                            "wildwest:okcorral:dentist",
-                            "wildwest:okcorral:gambler",
-                            "wildwest:okcorral:law:deputy:temp"
-                        ]
-                    },
-                    {
-                        name: "WyattEarp",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:gambler",
-                            "wildwest:okcorral:law:deputy"
-                        ]
-                    },
-                    {
-                        name: "VirgilEarp",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:law"
-                        ]
-                    }
-                ]
+                rolesConfig: {
+                    roles: [
+                        {
+                            name: "DocHoliday",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:gunfighter",
+                                "wildwest:okcorral:dentist",
+                                "wildwest:okcorral:gambler",
+                                "wildwest:okcorral:law:deputy:temp"
+                            ]
+                        },
+                        {
+                            name: "WyattEarp",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:gambler",
+                                "wildwest:okcorral:law:deputy"
+                            ]
+                        },
+                        {
+                            name: "VirgilEarp",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:law"
+                            ]
+                        }
+                    ]
+                }
             });
 
             chai.assert.sameDeepMembers(badge.effectiveScopes, [
@@ -54,33 +56,35 @@ describe("AuthorizationBadge", () => {
                 scopes: ["wildwest:okcorral:whisky:sipping", "-wildwest:okcorral:gunfighter", "-wildwest:okcorral:law:deputy:temp"],
                 roles: ["DocHoliday", "VirgilEarp"]
             }, {
-                roles: [
-                    {
-                        name: "DocHoliday",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:gunfighter",
-                            "wildwest:okcorral:dentist",
-                            "wildwest:okcorral:gambler",
-                            "wildwest:okcorral:law:deputy:temp"
-                        ]
-                    },
-                    {
-                        name: "WyattEarp",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:gambler",
-                            "wildwest:okcorral:law:deputy"
-                        ]
-                    },
-                    {
-                        name: "VirgilEarp",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:law"
-                        ]
-                    }
-                ]
+                rolesConfig: {
+                    roles: [
+                        {
+                            name: "DocHoliday",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:gunfighter",
+                                "wildwest:okcorral:dentist",
+                                "wildwest:okcorral:gambler",
+                                "wildwest:okcorral:law:deputy:temp"
+                            ]
+                        },
+                        {
+                            name: "WyattEarp",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:gambler",
+                                "wildwest:okcorral:law:deputy"
+                            ]
+                        },
+                        {
+                            name: "VirgilEarp",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:law"
+                            ]
+                        }
+                    ]
+                }
             });
 
             chai.assert.sameDeepMembers(badge.effectiveScopes, [
@@ -96,33 +100,35 @@ describe("AuthorizationBadge", () => {
                 scopes: ["wildwest:okcorral:whisky:sipping", "-wildwest:okcorral:gunfighter:gatlinggun", "-wildwest:okcorral:law"],
                 roles: ["DocHoliday", "VirgilEarp"]
             }, {
-                roles: [
-                    {
-                        name: "DocHoliday",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:gunfighter",
-                            "wildwest:okcorral:dentist",
-                            "wildwest:okcorral:gambler",
-                            "wildwest:okcorral:law:deputy:temp"
-                        ]
-                    },
-                    {
-                        name: "WyattEarp",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:gambler",
-                            "wildwest:okcorral:law:deputy"
-                        ]
-                    },
-                    {
-                        name: "VirgilEarp",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:law"
-                        ]
-                    }
-                ]
+                rolesConfig: {
+                    roles: [
+                        {
+                            name: "DocHoliday",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:gunfighter",
+                                "wildwest:okcorral:dentist",
+                                "wildwest:okcorral:gambler",
+                                "wildwest:okcorral:law:deputy:temp"
+                            ]
+                        },
+                        {
+                            name: "WyattEarp",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:gambler",
+                                "wildwest:okcorral:law:deputy"
+                            ]
+                        },
+                        {
+                            name: "VirgilEarp",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:law"
+                            ]
+                        }
+                    ]
+                }
             });
 
             chai.assert.sameDeepMembers(badge.effectiveScopes, [
@@ -138,33 +144,35 @@ describe("AuthorizationBadge", () => {
                 scopes: ["-wildwest:okcorral:whisky", "wildwest:okcorral:whisky:sipping", "wildwest:okcorral:whisky:mixing", "-wildwest:okcorral:gunfighter:gatlinggun", "-wildwest:okcorral:law"],
                 roles: ["DocHoliday", "VirgilEarp"]
             }, {
-                roles: [
-                    {
-                        name: "DocHoliday",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:gunfighter",
-                            "wildwest:okcorral:dentist",
-                            "wildwest:okcorral:gambler",
-                            "wildwest:okcorral:law:deputy:temp"
-                        ]
-                    },
-                    {
-                        name: "WyattEarp",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:gambler",
-                            "wildwest:okcorral:law:deputy"
-                        ]
-                    },
-                    {
-                        name: "VirgilEarp",
-                        description: "",
-                        scopes: [
-                            "wildwest:okcorral:law"
-                        ]
-                    }
-                ]
+                rolesConfig: {
+                    roles: [
+                        {
+                            name: "DocHoliday",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:gunfighter",
+                                "wildwest:okcorral:dentist",
+                                "wildwest:okcorral:gambler",
+                                "wildwest:okcorral:law:deputy:temp"
+                            ]
+                        },
+                        {
+                            name: "WyattEarp",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:gambler",
+                                "wildwest:okcorral:law:deputy"
+                            ]
+                        },
+                        {
+                            name: "VirgilEarp",
+                            description: "",
+                            scopes: [
+                                "wildwest:okcorral:law"
+                            ]
+                        }
+                    ]
+                }
             });
 
             chai.assert.sameDeepMembers(badge.effectiveScopes, [
@@ -329,7 +337,7 @@ describe("AuthorizationBadge", () => {
                 ]
             };
 
-            const auth = new AuthorizationBadge(jwt, rolesConfig);
+            const auth = new AuthorizationBadge(jwt, {rolesConfig});
             const newJwt = auth.getJwtPayload();
 
             chai.assert.notEqual(newJwt, jwt);
@@ -513,6 +521,8 @@ describe("AuthorizationBadge", () => {
                     "teamAdmin",
                     "webPortal"
                 ]
+            }, {
+                errorLogFunction: () => {}
             });
 
             chai.assert.throws(() => {

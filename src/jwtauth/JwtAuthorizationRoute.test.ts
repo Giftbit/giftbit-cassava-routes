@@ -4,11 +4,12 @@ import {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
 import {AuthorizationBadge} from "./AuthorizationBadge";
 import {StaticKey} from "./merchantSharedKey/StaticKey";
 import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
-import * as jsonwebtoken from "jsonwebtoken";
+import nodeUtil = require("util");
 
 describe("JwtAuthorizationRoute", () => {
 
     const authConfigPromise = Promise.resolve({secretkey: "secret"});
+    const memoryHoleLogger: (...msg: any[]) => void = () => {};
     const happyRoute: cassava.routes.Route = {
         matches: () => true,
         handle: async evt => ({body: {}})
@@ -17,8 +18,11 @@ describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in the Authorization header", async() => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route({
             matches: () => true,
@@ -54,7 +58,11 @@ describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in cookies when X-Requested-With is present", async() => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route({
             matches: () => true,
@@ -85,8 +93,11 @@ describe("JwtAuthorizationRoute", () => {
     it("verifies a valid JWT in cookies when x-requested-with header is lower case", async() => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route({
             matches: () => true,
@@ -119,8 +130,11 @@ describe("JwtAuthorizationRoute", () => {
         // We'll still accept these technically-wrong JWTs.
 
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        // jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -135,8 +149,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("verifies a JWT with a timestamp exp", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -154,8 +171,11 @@ describe("JwtAuthorizationRoute", () => {
         // never issued in practice.
 
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -170,8 +190,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects an Authorization header missing 'Bearer '", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(Promise.resolve({secretkey:"secret"}));
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise: Promise.resolve({secretkey:"secret"}),
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -187,8 +210,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT that is not base64", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -204,8 +230,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects an expired JWT", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
@@ -220,8 +249,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT with a bad signature in the Authorization header", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -237,8 +269,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT with a bad signature in cookies", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
@@ -254,8 +289,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT in cookies missing the X-Requested-With header", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -271,8 +309,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT in cookies with the X-Requested-With header value the wrong case", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -289,8 +330,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT in cookies missing gb_jwt_session", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
 
         const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
@@ -306,8 +350,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT in cookies missing gb_jwt_signature", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -324,8 +371,11 @@ describe("JwtAuthorizationRoute", () => {
 
     it("rejects a JWT with alg:none", async() => {
         const router = new cassava.Router();
-        const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-        jwtAuthorizationRoute.logErrors = false;
+        const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+            authConfigPromise,
+            infoLogFunction: memoryHoleLogger,
+            errorLogFunction: memoryHoleLogger
+        });
         router.route(jwtAuthorizationRoute);
         router.route(happyRoute);
 
@@ -343,8 +393,11 @@ describe("JwtAuthorizationRoute", () => {
         it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload 1", async() => {
             let secondHandlerCalled = false;
             const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-            jwtAuthorizationRoute.logErrors = false;
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+                authConfigPromise,
+                infoLogFunction: memoryHoleLogger,
+                errorLogFunction: memoryHoleLogger
+            });
             router.route(jwtAuthorizationRoute);
             router.route({
                 matches: () => true,
@@ -377,8 +430,11 @@ describe("JwtAuthorizationRoute", () => {
         it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload 2", async() => {
             let secondHandlerCalled = false;
             const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-            jwtAuthorizationRoute.logErrors = false;
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+                authConfigPromise,
+                infoLogFunction: memoryHoleLogger,
+                errorLogFunction: memoryHoleLogger
+            });
             router.route(jwtAuthorizationRoute);
             router.route({
                 matches: () => true,
@@ -409,8 +465,11 @@ describe("JwtAuthorizationRoute", () => {
 
         it("rejects an expired JWT", async() => {
             const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-            jwtAuthorizationRoute.logErrors = false;
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+                authConfigPromise,
+                infoLogFunction: memoryHoleLogger,
+                errorLogFunction: memoryHoleLogger
+            });
             router.route(jwtAuthorizationRoute);
             router.route(happyRoute);
 
@@ -427,8 +486,11 @@ describe("JwtAuthorizationRoute", () => {
 
         it("rejects a JWT without ASSUME scope", async() => {
             const router = new cassava.Router();
-            const jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise);
-            jwtAuthorizationRoute.logErrors = false;
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+                authConfigPromise,
+                infoLogFunction: memoryHoleLogger,
+                errorLogFunction: memoryHoleLogger
+            });
             router.route(jwtAuthorizationRoute);
             router.route(happyRoute);
 
@@ -452,10 +514,15 @@ describe("JwtAuthorizationRoute", () => {
 
         beforeEach(() => {
             router = new cassava.Router();
-            jwtAuthorizationRoute = new JwtAuthorizationRoute(authConfigPromise, null, "http://someUuri", Promise.resolve({assumeToken: "secret"}));
+            jwtAuthorizationRoute = new JwtAuthorizationRoute({
+                authConfigPromise,
+                merchantKeyUri: "http://someUuri",
+                assumeGetSharedSecretToken: Promise.resolve({assumeToken: "secret"}),
+                infoLogFunction: memoryHoleLogger,
+                errorLogFunction: memoryHoleLogger
+            });
             originalMerchantKeyProvider = jwtAuthorizationRoute.merchantKeyProvider;
             (jwtAuthorizationRoute as any).merchantKeyProvider = staticKey = new StaticKey("someOtherSecret");
-            jwtAuthorizationRoute.logErrors = false;
         });
 
         afterEach(() => {
@@ -624,6 +691,42 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.isObject(resp);
             chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
             chai.assert.isTrue(secondHandlerCalled);
+        });
+    });
+
+    describe("logging", () => {
+        it("logs the verified auth but *not* the signature", async () => {
+            let logs: string = "";
+
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+                authConfigPromise,
+                infoLogFunction: (...msgs: any[]) => {
+                    for (const msg of msgs) {
+                        // This is about how Node's console.log works.
+                        logs += nodeUtil.inspect(msg);
+                    }
+                },
+                errorLogFunction: memoryHoleLogger
+            });
+            router.route(jwtAuthorizationRoute);
+            router.route({
+                matches: () => true,
+                handle: () => ({body: {}})
+            });
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJzY29wZXMiOlsiQyIsIlQiLCJSIiwiQ0VDIiwiQ0VSIiwiVUEiLCJGIl19.15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+            chai.assert.isString(logs);
+            chai.assert.isNotEmpty(logs);
+            chai.assert.include(logs, "user-7052210bcb94448b825ffa68508d29ad-TEST");
+            chai.assert.notInclude(logs, "15AOfp7clpOX3IuyNj0XodqPaQTY6MxsNTW-mVLgYoY");
         });
     });
 });

@@ -2,6 +2,7 @@ import * as cassava from "cassava";
 import * as jwt from "jsonwebtoken";
 import {JwtPayload} from "./JwtPayload";
 import {RolesConfig} from "../secureConfig";
+import {AuthorizationBadgeOptions} from "./AuthorizationBadgeOptions";
 
 /**
  * Expanded representation of the JWT payload.
@@ -29,7 +30,17 @@ export class AuthorizationBadge {
     scopes: string[] = [];
     effectiveScopes: string[] = [];
 
-    constructor(jwtPayload?: JwtPayload, private readonly rolesConfig?: RolesConfig) {
+    private readonly rolesConfig: RolesConfig;
+    private readonly infoLogFunction?: (...msg: any[]) => void = console.log.bind(console);
+    private readonly errorLogFunction?: (...msg: any[]) => void = console.error.bind(console);
+
+    constructor(jwtPayload?: JwtPayload, options?: AuthorizationBadgeOptions) {
+        if (options) {
+            this.rolesConfig = options.rolesConfig;
+            this.infoLogFunction = options.infoLogFunction || this.infoLogFunction;
+            this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
+        }
+
         if (jwtPayload) {
             if (jwtPayload.g) {
                 this.userId = jwtPayload.g.gui;
@@ -64,7 +75,7 @@ export class AuthorizationBadge {
             this.sanitizeMerchantSigned();
         }
 
-        this.effectiveScopes = this.getEffectiveScopes(rolesConfig);
+        this.effectiveScopes = this.getEffectiveScopes();
     }
 
     getJwtPayload(): JwtPayload {
@@ -144,7 +155,11 @@ export class AuthorizationBadge {
         };
         j.parentJti = jwtPayload.jti;
 
-        const badge = new AuthorizationBadge(j, this.rolesConfig);
+        const badge = new AuthorizationBadge(j, {
+            rolesConfig: this.rolesConfig,
+            infoLogFunction: this.infoLogFunction,
+            errorLogFunction: this.errorLogFunction
+        });
         badge.scopes = badge.scopes.filter(scope => scope !== "ASSUME");
         badge.effectiveScopes = badge.effectiveScopes.filter(scope => scope !== "ASSUME");
 
@@ -158,16 +173,10 @@ export class AuthorizationBadge {
     requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId")[]): void {
         for (let id of ids) {
             if (!this[id]) {
+                this.errorLogFunction(`auth missing required id '${id}'`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
             }
         }
-    }
-
-    /**
-     * @deprecated use hasScope, because the name is clearer
-     */
-    isBadgeAuthorized(scope: string): boolean {
-        return this.hasScope(scope);
     }
 
     /**
@@ -199,8 +208,11 @@ export class AuthorizationBadge {
      * Throws a RestError if they are not.
      */
     requireScopes(...scopes: string[]): void {
-        if (!this.hasScopes(...scopes)) {
-            throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
+        for (let scope of scopes) {
+            if (!this.hasScope(scope)) {
+                this.errorLogFunction(`auth missing required scope '${scope}'`);
+                throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
+            }
         }
     }
 
@@ -216,12 +228,12 @@ export class AuthorizationBadge {
         this.scopes.length = 0;
     }
 
-    private getEffectiveScopes(rolesConfig: RolesConfig): string[] {
+    private getEffectiveScopes(): string[] {
         const effectiveScopes: string[] = [];
 
-        if (rolesConfig) {
+        if (this.rolesConfig) {
             this.roles.forEach(roleName => {
-                const roleConfig = rolesConfig.roles.find(roleConfig => roleConfig.name === roleName);
+                const roleConfig = this.rolesConfig.roles.find(roleConfig => roleConfig.name === roleName);
                 if (!roleConfig) {
                     console.log(`JWT ${this.uniqueIdentifier} contains an unknown role ${roleName}`);
                     return;

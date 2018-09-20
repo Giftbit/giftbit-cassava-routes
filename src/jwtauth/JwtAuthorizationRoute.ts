@@ -2,30 +2,30 @@ import * as cassava from "cassava";
 import * as jwt from "jsonwebtoken";
 import {AuthorizationBadge} from "./AuthorizationBadge";
 import {AuthorizationHeader} from "./AuthorizationHeader";
-import {AuthenticationConfig} from "../secureConfig/AuthenticationConfig";
-import {RolesConfig} from "../secureConfig/RolesConfig";
+import {AuthenticationConfig} from "../secureConfig";
+import {RolesConfig} from "../secureConfig";
 import {JwtPayload} from "./JwtPayload";
-import {AssumeScopeToken} from "../secureConfig/AssumeScopeToken";
 import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
 import {RestMerchantKeyProvider} from "./merchantSharedKey/RestMerchantKeyProvider";
+import {JwtAuthorizationRouteOptions} from "./JwtAuthorizationRouteOptions";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
 
-    /**
-     * Log errors to console.
-     */
-    logErrors = true;
-
+    private readonly infoLogFunction?: (...msg: any[]) => void = console.log.bind(console);
+    private readonly errorLogFunction?: (...msg: any[]) => void = console.error.bind(console);
+    private readonly authConfigPromise: Promise<AuthenticationConfig>;
+    private readonly rolesConfigPromise?: Promise<RolesConfig>;
     readonly merchantKeyProvider: MerchantKeyProvider;
 
-    constructor(private readonly authConfigPromise: Promise<AuthenticationConfig>,
-                private readonly rolesConfigPromise?: Promise<RolesConfig>,
-                private readonly merchantKeyUri?: string,
-                private readonly assumeGetSharedSecretToken?: Promise<AssumeScopeToken>) {
+    constructor(private readonly options: JwtAuthorizationRouteOptions) {
+        this.infoLogFunction = options.infoLogFunction || this.infoLogFunction;
+        this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
+        this.authConfigPromise = options.authConfigPromise;
+        this.rolesConfigPromise = options.rolesConfigPromise;
 
-        if (merchantKeyUri && assumeGetSharedSecretToken) {
-            this.merchantKeyProvider = new RestMerchantKeyProvider(merchantKeyUri, assumeGetSharedSecretToken);
-        } else if (merchantKeyUri || assumeGetSharedSecretToken) {
+        if (options.merchantKeyUri && options.assumeGetSharedSecretToken) {
+            this.merchantKeyProvider = new RestMerchantKeyProvider(options.merchantKeyUri, options.assumeGetSharedSecretToken);
+        } else if (options.merchantKeyUri || options.assumeGetSharedSecretToken) {
             throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
         }
     }
@@ -47,8 +47,10 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
             evt.meta["auth-token"] = token;
             evt.meta["auth-header"] = authHeader;
+
+            this.infoLogFunction("JWT authorized", auth);
         } catch (e) {
-            this.logErrors && console.error("error verifying jwt", e);
+            this.errorLogFunction("error verifying jwt", e);
             throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
         }
         return null;
@@ -84,7 +86,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         const authorization = evt.headersLowerCase["authorization"];
         if (authorization) {
             if (!/^Bearer /.test(authorization)) {
-                this.logErrors && console.log(`authorization header doesn't start with 'Bearer ' Authorization=${this.redact(authorization)}`);
+                this.errorLogFunction(`authorization header doesn't start with 'Bearer ' Authorization=${this.redact(authorization)}`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
             }
             return authorization.substring(7);
@@ -92,13 +94,13 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
         if (evt.cookies["gb_jwt_session"] && evt.cookies["gb_jwt_signature"]) {
             if (evt.headersLowerCase["x-requested-with"] !== "XMLHttpRequest") {
-                this.logErrors && console.log(`authorization cookies set but X-Requested-With not set X-Requested-With='${evt.headersLowerCase["x-requested-with"]}'`);
+                this.errorLogFunction(`authorization cookies set but X-Requested-With not set X-Requested-With='${evt.headersLowerCase["x-requested-with"]}'`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
             }
             return `${evt.cookies["gb_jwt_session"]}.${evt.cookies["gb_jwt_signature"]}`;
         }
 
-        this.logErrors && console.log(`could not find auth Authorization=${this.redact(authorization)} Cookies gb_jwt_session='${evt.cookies["gb_jwt_session"]}' gb_jwt_signature=${this.redact(evt.cookies["gb_jwt_signature"])}`);
+        this.errorLogFunction(`could not find auth Authorization=${this.redact(authorization)} Cookies gb_jwt_session='${evt.cookies["gb_jwt_session"]}' gb_jwt_signature=${this.redact(evt.cookies["gb_jwt_signature"])}`);
         throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
     }
 
@@ -154,6 +156,10 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             ignoreExpiration: false,
             algorithms: ["HS256"]
         }) as object;
-        return new AuthorizationBadge(authPayload, this.rolesConfigPromise ? await this.rolesConfigPromise : null);
+        return new AuthorizationBadge(authPayload, {
+            rolesConfig: this.rolesConfigPromise ? await this.rolesConfigPromise : null,
+            infoLogFunction: this.infoLogFunction,
+            errorLogFunction: this.errorLogFunction
+        });
     }
 }

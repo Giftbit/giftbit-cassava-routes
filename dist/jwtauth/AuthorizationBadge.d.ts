@@ -1,10 +1,9 @@
 import { JwtPayload } from "./JwtPayload";
-import { RolesConfig } from "../secureConfig";
+import { AuthorizationBadgeOptions } from "./AuthorizationBadgeOptions";
 /**
  * Expanded representation of the JWT payload.
  */
 export declare class AuthorizationBadge {
-    private readonly rolesConfig?;
     userId: string;
     teamMemberId: string;
     merchantId: string;
@@ -24,7 +23,10 @@ export declare class AuthorizationBadge {
     roles: string[];
     scopes: string[];
     effectiveScopes: string[];
-    constructor(jwtPayload?: JwtPayload, rolesConfig?: RolesConfig);
+    private readonly rolesConfig;
+    private readonly infoLogFunction?;
+    private readonly errorLogFunction?;
+    constructor(jwtPayload?: JwtPayload, options?: AuthorizationBadgeOptions);
     getJwtPayload(): JwtPayload;
     getAuthorizeAsPayload(): string;
     sign(secret: string): string;
@@ -34,10 +36,6 @@ export declare class AuthorizationBadge {
      * eg: requireIds("userId", "merchantId");
      */
     requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId")[]): void;
-    /**
-     * @deprecated use hasScope, because the name is clearer
-     */
-    isBadgeAuthorized(scope: string): boolean;
     /**
      * Returns true if this badge contains the given scope or any parent of the scope.
      */
