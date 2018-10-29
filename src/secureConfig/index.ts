@@ -12,7 +12,7 @@ const s3 = new aws.S3({
     region: region
 });
 
-export const logErrors = true;
+export const logErrors: boolean = true;
 
 export async function fetchFromS3<T>(bucket: string, key: string): Promise<T> {
     let retryWait = 100;

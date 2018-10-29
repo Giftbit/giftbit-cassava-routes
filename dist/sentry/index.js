@@ -25,7 +25,7 @@ function wrapLambdaHandler(options) {
         throw new Error("Must specify one of router or handler.");
     }
     const handler = options.handler || options.router.getLambdaHandler();
-    installApiKey(options).then(() => initialized = true, err => console.error("sentry init error", err));
+    installApiKey(options).then(onInitialized, err => console.error("Sentry init error", err));
     if (options.router) {
         options.router.errorHandler = sendErrorNotification;
     }
@@ -43,7 +43,7 @@ function installApiKey(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const secureConfig = yield options.secureConfig;
         if (!secureConfig.apiKey) {
-            throw new Error("Stored Sentry API key object missing `apiKey` member.");
+            throw new Error("Sentry API key object missing `apiKey` member.");
         }
         Raven.config(secureConfig.apiKey).install();
     });
@@ -60,17 +60,34 @@ function getDefaultTags(ctx) {
     }
     return tags;
 }
+const errorQueue = [];
+function onInitialized() {
+    initialized = true;
+    while (errorQueue.length) {
+        Raven.captureException(errorQueue.shift(), ravenContext, (ravenError) => {
+            if (ravenError) {
+                logger("error sending to Sentry", ravenError);
+            }
+        });
+    }
+}
 /**
  * Send an error notification to Sentry.
  * @param {Error | string} err
  */
 function sendErrorNotification(err) {
-    logger(err);
     if (!initialized) {
-        logger("Error notification service is not initialized.");
-        return;
+        logger("(queued for sending)", err);
+        errorQueue.push(err);
     }
-    Raven.captureException(err, ravenContext);
+    else {
+        logger(err);
+        Raven.captureException(err, ravenContext, (ravenError) => {
+            if (ravenError) {
+                logger("error sending to Sentry", ravenError);
+            }
+        });
+    }
 }
 exports.sendErrorNotification = sendErrorNotification;
 //# sourceMappingURL=index.js.map

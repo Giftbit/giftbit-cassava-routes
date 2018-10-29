@@ -6,7 +6,7 @@ import {RavenContext} from "./RavenContext";
 
 let initialized = false;
 
-let logger: (error: Error | string) => void = console.error.bind(console);
+let logger: (...msg: any[]) => void = console.error.bind(console);
 
 let ravenContext: RavenContext = {
     tags: {},
@@ -32,7 +32,7 @@ export function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any,
     }
     const handler: (evt: any, ctx: awslambda.Context) => Promise<any> = options.handler || options.router.getLambdaHandler() as any;
 
-    installApiKey(options).then(() => initialized = true, err => console.error("sentry init error", err));
+    installApiKey(options).then(onInitialized, err => console.error("Sentry init error", err));
 
     if (options.router) {
         options.router.errorHandler = sendErrorNotification;
@@ -54,7 +54,7 @@ export function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any,
 async function installApiKey(options: WrapLambdaHandlerOptions): Promise<void> {
     const secureConfig = await options.secureConfig;
     if (!secureConfig.apiKey) {
-        throw new Error("Stored Sentry API key object missing `apiKey` member.");
+        throw new Error("Sentry API key object missing `apiKey` member.");
     }
     Raven.config(secureConfig.apiKey).install();
 }
@@ -73,17 +73,33 @@ function getDefaultTags(ctx: awslambda.Context): any {
     return tags;
 }
 
+const errorQueue: Error[] = [];
+
+function onInitialized(): void {
+    initialized = true;
+    while (errorQueue.length) {
+        Raven.captureException(errorQueue.shift(), ravenContext, (ravenError) => {
+            if (ravenError) {
+                logger("error sending to Sentry", ravenError);
+            }
+        });
+    }
+}
+
 /**
  * Send an error notification to Sentry.
  * @param {Error | string} err
  */
-export function sendErrorNotification(err: Error) {
-    logger(err);
-
+export function sendErrorNotification(err: Error): void {
     if (!initialized) {
-        logger("Error notification service is not initialized.");
-        return;
+        logger("(queued for sending)", err);
+        errorQueue.push(err);
+    } else {
+        logger(err);
+        Raven.captureException(err, ravenContext, (ravenError) => {
+            if (ravenError) {
+                logger("error sending to Sentry", ravenError);
+            }
+        });
     }
-
-    Raven.captureException(err, ravenContext);
 }
