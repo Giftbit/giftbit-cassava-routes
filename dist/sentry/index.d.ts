@@ -18,6 +18,5 @@ export interface WrapLambdaHandlerOptions {
 export declare function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any, ctx: awslambda.Context) => Promise<any>;
 /**
  * Send an error notification to Sentry.
- * @param {Error | string} err
  */
 export declare function sendErrorNotification(err: Error): void;

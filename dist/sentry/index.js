@@ -9,7 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Raven = require("raven");
-let initialized = false;
+let onInitialized;
+let onInitializedFailed;
+const initializedPromise = new Promise((resolve, reject) => {
+    onInitialized = resolve;
+    onInitializedFailed = reject;
+});
+const sentryPromises = [];
 let logger = console.error.bind(console);
 let ravenContext = {
     tags: {},
@@ -21,73 +27,75 @@ let ravenContext = {
  * @returns a Lambda handler
  */
 function wrapLambdaHandler(options) {
-    if (!options.router && !options.handler) {
-        throw new Error("Must specify one of router or handler.");
-    }
-    const handler = options.handler || options.router.getLambdaHandler();
-    installApiKey(options).then(onInitialized, err => console.error("Sentry init error", err));
-    if (options.router) {
-        options.router.errorHandler = sendErrorNotification;
-    }
     if (options.logger) {
         logger = options.logger;
     }
-    return (evt, ctx) => {
-        ravenContext.tags = Object.assign({}, getDefaultTags(ctx), options.additionalTags);
+    if (!options.router && !options.handler) {
+        logger("Must specify one of router or handler.");
+        throw new Error("Must specify one of router or handler.");
+    }
+    if (options.router) {
+        options.router.errorHandler = sendErrorNotification;
+    }
+    const handler = options.handler || options.router.getLambdaHandler();
+    installApiKey(options).then(onInitialized, onInitializedFailed);
+    return (evt, ctx) => __awaiter(this, void 0, void 0, function* () {
+        ravenContext.tags = Object.assign({}, getDefaultTags(evt, ctx), options.additionalTags);
         ravenContext.extra = ctx;
-        return handler(evt, ctx);
-    };
+        const result = handler(evt, ctx);
+        try {
+            yield Promise.all(sentryPromises);
+        }
+        catch (err) {
+            logger("error awaiting sentry promises", err);
+        }
+        sentryPromises.length = 0;
+        return result;
+    });
 }
 exports.wrapLambdaHandler = wrapLambdaHandler;
 function installApiKey(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const secureConfig = yield options.secureConfig;
         if (!secureConfig.apiKey) {
-            throw new Error("Sentry API key object missing `apiKey` member.");
+            throw new Error("Sentry not initialized. Sentry API key object missing `apiKey` member.");
         }
         Raven.config(secureConfig.apiKey).install();
     });
 }
-function getDefaultTags(ctx) {
+function getDefaultTags(evt, ctx) {
     let tags = {
-        // I think we did it this way for consistency with some existing thing.
-        functionname: ctx.functionName
+        functionname: ctx.functionName,
+        region: process.env["AWS_REGION"]
     };
     const accountMatcher = /arn:aws:lambda:([a-z0-9-]+):([0-9]+):.*/.exec(ctx.invokedFunctionArn);
     if (accountMatcher) {
-        tags["region"] = accountMatcher[1];
         tags["aws_account"] = accountMatcher[2];
     }
     return tags;
 }
-const errorQueue = [];
-function onInitialized() {
-    initialized = true;
-    while (errorQueue.length) {
-        Raven.captureException(errorQueue.shift(), ravenContext, (ravenError) => {
-            if (ravenError) {
-                logger("error sending to Sentry", ravenError);
-            }
-        });
-    }
-}
 /**
  * Send an error notification to Sentry.
- * @param {Error | string} err
  */
 function sendErrorNotification(err) {
-    if (!initialized) {
-        logger("(queued for sending)", err);
-        errorQueue.push(err);
-    }
-    else {
-        logger(err);
-        Raven.captureException(err, ravenContext, (ravenError) => {
-            if (ravenError) {
-                logger("error sending to Sentry", ravenError);
-            }
-        });
-    }
+    sentryPromises.push(sendErrorNotificationImpl(err));
 }
 exports.sendErrorNotification = sendErrorNotification;
+function sendErrorNotificationImpl(err) {
+    return __awaiter(this, void 0, void 0, function* () {
+        logger(err);
+        yield initializedPromise;
+        return new Promise(((resolve, reject) => {
+            Raven.captureException(err, ravenContext, (ravenError) => {
+                if (ravenError) {
+                    logger("error sending to Sentry", ravenError);
+                    reject(ravenError);
+                }
+                else {
+                    resolve();
+                }
+            });
+        }));
+    });
+}
 //# sourceMappingURL=index.js.map
