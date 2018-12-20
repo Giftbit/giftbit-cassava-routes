@@ -99,10 +99,10 @@ export function sendErrorNotification(err: Error): void {
 async function sendErrorNotificationImpl(err: Error): Promise<void> {
     logger(err);
     await initializedPromise;
-    return await new Promise<void>(((resolve, reject) => {
+    return new Promise<void>(((resolve, reject) => {
         Raven.captureException(err, ravenContext, (ravenError) => {
             if (ravenError) {
-                logger("Unable to send to Sentry:", ravenError);
+                logger("error sending to Sentry", ravenError);
                 reject(ravenError);
             } else {
                 resolve();

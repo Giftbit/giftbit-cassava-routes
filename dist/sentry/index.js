@@ -85,10 +85,10 @@ function sendErrorNotificationImpl(err) {
     return __awaiter(this, void 0, void 0, function* () {
         logger(err);
         yield initializedPromise;
-        return yield new Promise(((resolve, reject) => {
+        return new Promise(((resolve, reject) => {
             Raven.captureException(err, ravenContext, (ravenError) => {
                 if (ravenError) {
-                    logger("Unable to send to Sentry:", ravenError);
+                    logger("error sending to Sentry", ravenError);
                     reject(ravenError);
                 }
                 else {
