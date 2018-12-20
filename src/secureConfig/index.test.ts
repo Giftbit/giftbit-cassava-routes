@@ -29,7 +29,7 @@ describe("secureConfig", () => {
                         promise: () => Promise.resolve({
                             Body: Buffer.from(JSON.stringify(value))
                         })
-                    }
+                    } as aws.Request<any, aws.AWSError>
                 });
 
             const result = await secureConfig.fetchFromS3("hat", "Florida");
@@ -47,7 +47,7 @@ describe("secureConfig", () => {
                     chai.assert.equal(params.Key, "Florida");
                     return {
                         promise: () => Promise.reject(new Error("I'm a network error"))
-                    }
+                    } as aws.Request<any, aws.AWSError>
                 })
                 .onSecondCall()
                 .callsFake((operation: string, params: {Bucket: string, Key: string})  => {
@@ -55,7 +55,7 @@ describe("secureConfig", () => {
                     chai.assert.equal(params.Key, "Florida");
                     return {
                         promise: () => Promise.reject(new Error("I'm a network error"))
-                    }
+                    } as aws.Request<any, aws.AWSError>
                 })
                 .onThirdCall()
                 .callsFake((operation: string, params: {Bucket: string, Key: string})  => {
@@ -65,7 +65,7 @@ describe("secureConfig", () => {
                         promise: () => Promise.resolve({
                             Body: Buffer.from(JSON.stringify(value))
                         })
-                    }
+                    } as aws.Request<any, aws.AWSError>
                 });
 
             const result = await secureConfig.fetchFromS3("hat", "Florida");

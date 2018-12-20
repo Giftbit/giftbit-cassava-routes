@@ -12,7 +12,6 @@ const cassava = require("cassava");
 const jwt = require("jsonwebtoken");
 const AuthorizationBadge_1 = require("./AuthorizationBadge");
 const AuthorizationHeader_1 = require("./AuthorizationHeader");
-const RestMerchantKeyProvider_1 = require("./merchantSharedKey/RestMerchantKeyProvider");
 class JwtAuthorizationRoute {
     constructor(options) {
         this.options = options;
@@ -22,12 +21,7 @@ class JwtAuthorizationRoute {
         this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
         this.authConfigPromise = options.authConfigPromise;
         this.rolesConfigPromise = options.rolesConfigPromise;
-        if (options.merchantKeyUri && options.assumeGetSharedSecretToken) {
-            this.merchantKeyProvider = new RestMerchantKeyProvider_1.RestMerchantKeyProvider(options.merchantKeyUri, options.assumeGetSharedSecretToken);
-        }
-        else if (options.merchantKeyUri || options.assumeGetSharedSecretToken) {
-            throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
-        }
+        this.sharedSecretProvider = options.sharedSecretProvider;
     }
     handle(evt) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -133,10 +127,10 @@ class JwtAuthorizationRoute {
             }
             let secret;
             if (unverifiedAuthPayload.iss === "MERCHANT") {
-                if (!this.merchantKeyProvider) {
+                if (!this.sharedSecretProvider) {
                     throw new Error("Merchant key provider has not been configured.  Not accepting merchant signed tokens.");
                 }
-                secret = yield this.merchantKeyProvider.getMerchantKey(token);
+                secret = yield this.sharedSecretProvider.getSharedSecret(token);
                 if (!secret) {
                     throw new Error("Secret is null.  Check that the merchant has set a shared secret.");
                 }

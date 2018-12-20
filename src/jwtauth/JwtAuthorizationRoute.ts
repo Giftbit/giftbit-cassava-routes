@@ -5,8 +5,7 @@ import {AuthorizationHeader} from "./AuthorizationHeader";
 import {AuthenticationConfig} from "../secureConfig";
 import {RolesConfig} from "../secureConfig";
 import {JwtPayload} from "./JwtPayload";
-import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
-import {RestMerchantKeyProvider} from "./merchantSharedKey/RestMerchantKeyProvider";
+import {SharedSecretProvider} from "./sharedSecret";
 import {JwtAuthorizationRouteOptions} from "./JwtAuthorizationRouteOptions";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
@@ -15,19 +14,14 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
     private readonly errorLogFunction?: (...msg: any[]) => void = console.error.bind(console);
     private readonly authConfigPromise: Promise<AuthenticationConfig>;
     private readonly rolesConfigPromise?: Promise<RolesConfig>;
-    readonly merchantKeyProvider: MerchantKeyProvider;
+    private readonly sharedSecretProvider: SharedSecretProvider;
 
     constructor(private readonly options: JwtAuthorizationRouteOptions) {
         this.infoLogFunction = options.infoLogFunction || this.infoLogFunction;
         this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
         this.authConfigPromise = options.authConfigPromise;
         this.rolesConfigPromise = options.rolesConfigPromise;
-
-        if (options.merchantKeyUri && options.assumeGetSharedSecretToken) {
-            this.merchantKeyProvider = new RestMerchantKeyProvider(options.merchantKeyUri, options.assumeGetSharedSecretToken);
-        } else if (options.merchantKeyUri || options.assumeGetSharedSecretToken) {
-            throw new Error("Configuration error. You must provide both the merchantKeyUri and the assumeGetSharedSecretToken or neither.");
-        }
+        this.sharedSecretProvider = options.sharedSecretProvider;
     }
 
     async handle(evt: cassava.RouterEvent): Promise<cassava.RouterResponse> {
@@ -137,10 +131,10 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
         let secret: string;
         if (unverifiedAuthPayload.iss === "MERCHANT") {
-            if (!this.merchantKeyProvider) {
+            if (!this.sharedSecretProvider) {
                 throw new Error("Merchant key provider has not been configured.  Not accepting merchant signed tokens.");
             }
-            secret = await this.merchantKeyProvider.getMerchantKey(token);
+            secret = await this.sharedSecretProvider.getSharedSecret(token);
             if (!secret) {
                 throw new Error("Secret is null.  Check that the merchant has set a shared secret.");
             }

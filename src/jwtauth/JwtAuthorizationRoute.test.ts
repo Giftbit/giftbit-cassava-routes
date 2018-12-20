@@ -2,9 +2,8 @@ import * as cassava from "cassava";
 import * as chai from "chai";
 import {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
 import {AuthorizationBadge} from "./AuthorizationBadge";
-import {StaticKey} from "./merchantSharedKey/StaticKey";
-import {MerchantKeyProvider} from "./merchantSharedKey/MerchantKeyProvider";
 import nodeUtil = require("util");
+import {StaticSharedSecretProvider} from "./sharedSecret";
 
 describe("JwtAuthorizationRoute", () => {
 
@@ -507,27 +506,17 @@ describe("JwtAuthorizationRoute", () => {
     });
 
     describe("merchant self signing support", () => {
-        let staticKey: StaticKey;
         let router: cassava.Router;
         let jwtAuthorizationRoute: JwtAuthorizationRoute;
-        let originalMerchantKeyProvider: MerchantKeyProvider;
 
         beforeEach(() => {
             router = new cassava.Router();
             jwtAuthorizationRoute = new JwtAuthorizationRoute({
                 authConfigPromise,
-                merchantKeyUri: "http://someUuri",
-                assumeGetSharedSecretToken: Promise.resolve({assumeToken: "secret"}),
+                sharedSecretProvider: new StaticSharedSecretProvider("someOtherSecret"),
                 infoLogFunction: memoryHoleLogger,
                 errorLogFunction: memoryHoleLogger
             });
-            originalMerchantKeyProvider = jwtAuthorizationRoute.merchantKeyProvider;
-            (jwtAuthorizationRoute as any).merchantKeyProvider = staticKey = new StaticKey("someOtherSecret");
-        });
-
-        afterEach(() => {
-            (jwtAuthorizationRoute as any).merchantKeyProvider = originalMerchantKeyProvider;
-            originalMerchantKeyProvider = staticKey = null
         });
 
         it("verifies a valid merchant JWT", async() => {
@@ -622,7 +611,7 @@ describe("JwtAuthorizationRoute", () => {
         });
 
         it("rejects a JWT with a bad signature in the Authorization header", async() => {
-            (jwtAuthorizationRoute as any).merchantKeyProvider = new StaticKey("someDifferentSecret");
+            (jwtAuthorizationRoute as any).sharedSecretProvider = new StaticSharedSecretProvider("someDifferentSecret");
             router.route(jwtAuthorizationRoute);
             router.route(happyRoute);
 

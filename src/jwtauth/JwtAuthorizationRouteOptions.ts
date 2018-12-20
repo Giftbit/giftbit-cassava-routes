@@ -1,12 +1,11 @@
 import {AuthenticationConfig} from "../secureConfig";
 import {RolesConfig} from "../secureConfig";
-import {AssumeScopeToken} from "../secureConfig";
+import {SharedSecretProvider} from "./sharedSecret/SharedSecretProvider";
 
 export interface JwtAuthorizationRouteOptions {
     authConfigPromise: Promise<AuthenticationConfig>;
     rolesConfigPromise?: Promise<RolesConfig>;
-    merchantKeyUri?: string;
-    assumeGetSharedSecretToken?: Promise<AssumeScopeToken>;
+    sharedSecretProvider?: SharedSecretProvider;
     infoLogFunction?: (...msg: any[]) => void;
     errorLogFunction?: (...msg: any[]) => void;
 }
