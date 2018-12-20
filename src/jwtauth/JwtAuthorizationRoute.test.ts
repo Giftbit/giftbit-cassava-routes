@@ -2,8 +2,8 @@ import * as cassava from "cassava";
 import * as chai from "chai";
 import {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
 import {AuthorizationBadge} from "./AuthorizationBadge";
-import nodeUtil = require("util");
 import {StaticSharedSecretProvider} from "./sharedSecret";
+import nodeUtil = require("util");
 
 describe("JwtAuthorizationRoute", () => {
 

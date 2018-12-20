@@ -3,4 +3,6 @@ export {AuthorizationHeader} from "./AuthorizationHeader";
 export {JwtAuthorizationRoute} from "./JwtAuthorizationRoute";
 export {JwtHeader} from "./JwtHeader";
 export {JwtPayload} from "./JwtPayload";
-export * from "./sharedSecret";
+
+import * as sharedSecret from "./sharedSecret";
+export {sharedSecret};
