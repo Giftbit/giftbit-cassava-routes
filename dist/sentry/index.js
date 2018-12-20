@@ -42,15 +42,19 @@ function wrapLambdaHandler(options) {
     return (evt, ctx) => __awaiter(this, void 0, void 0, function* () {
         ravenContext.tags = Object.assign({}, getDefaultTags(evt, ctx), options.additionalTags);
         ravenContext.extra = ctx;
-        const result = handler(evt, ctx);
-        try {
-            yield Promise.all(sentryPromises);
+        const result = yield handler(evt, ctx);
+        if (sentryPromises.length) {
+            // Wait for any workers sending errors to Sentry for up to 3 seconds.
+            // Any errors not sent to Sentry before the Lambda returns may never get sent.
+            try {
+                yield Promise.race([Promise.all(sentryPromises), new Promise(resolve => setTimeout(resolve, 3000))]);
+            }
+            catch (err) {
+                logger("error awaiting sentry promises", err);
+            }
+            sentryPromises.length = 0;
         }
-        catch (err) {
-            logger("error awaiting sentry promises", err);
-        }
-        sentryPromises.length = 0;
-        return result;
+        return Promise.resolve(result);
     });
 }
 exports.wrapLambdaHandler = wrapLambdaHandler;
