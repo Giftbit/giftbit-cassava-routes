@@ -14,8 +14,10 @@ export class MetricsRoute implements cassava.routes.Route {
     }
 
     postProcess(evt: cassava.RouterEvent, resp: cassava.RouterResponse): cassava.RouterResponse {
-        // todo - sanitize path & query params (IDs, codes)?
-        const path = evt.path;
+        let path = evt.path;
+        for (let key of Object.keys(evt.pathParameters)) {
+            path = path.replace(evt.pathParameters[key], `{${key}}`);
+        }
         const auth = evt.meta["auth"] as AuthorizationBadge;
         const liveMode = !auth.isTestUser();
 
