@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const MetricsRouteUtils_1 = require("./MetricsRouteUtils");
 class MetricsRoute {
     constructor(options) {
         this.options = options;
@@ -9,27 +10,28 @@ class MetricsRoute {
     }
     handle(evt) {
     }
-    postProcess(evt, resp) {
-        // todo - sanitize path & query params (IDs, codes)?
-        const path = evt.path;
+    /**
+     * Uses Cloudwatch logs to send metrics to Datadog: see https://docs.datadoghq.com/integrations/amazon_lambda/#using-cloudwatch-logs
+     * Log message follows format `MONITORING|<unix_epoch_timestamp_in_seconds>|<value>|<metric_type>|<metric_name>|#<tag_list>`
+     * The tag function_name:<name_of_the_function> is added automatically
+     */
+    postProcess(evt, resp, handlingRoutes) {
+        const path = MetricsRouteUtils_1.getPathForMetricsLogging(evt, handlingRoutes);
         const auth = evt.meta["auth"];
-        const liveMode = !auth.isTestUser();
-        /**
-         * Uses Cloudwatch logs to send metrics to Datadog: see https://docs.datadoghq.com/integrations/amazon_lambda/#using-cloudwatch-logs
-         * Log message follows format `MONITORING|<unix_epoch_timestamp_in_seconds>|<value>|<metric_type>|<metric_name>|#<tag_list>`
-         * The tag function_name:<name_of_the_function> is added automatically
-         */
-        this.log(`MONITORING|` +
+        let metricsLogString = `MONITORING|` +
             `${Math.round(Date.now() / 1000)}|` +
-            `${resp.statusCode}|` +
+            `${resp.statusCode || 0}|` + // JwtAuthorizationRoute does not return response code
             `histogram|` +
             `response_codes|` +
             `#path:${path},` +
-            `#liveMode:${liveMode},` +
             `#respCode:${resp.statusCode},` +
-            `#httpMethod:${evt.httpMethod},` +
-            `#userId:${auth.userId},` +
-            `#teamMemberId:${auth.teamMemberId}`);
+            `#httpMethod:${evt.httpMethod}`;
+        if (auth) { // HealthCheckRoute does not require auth
+            metricsLogString += `,#liveMode:${!auth.isTestUser()},` +
+                `#userId:${auth.userId},` +
+                `#teamMemberId:${auth.teamMemberId}`;
+        }
+        this.log(metricsLogString);
         return resp;
     }
     log(msg) {
