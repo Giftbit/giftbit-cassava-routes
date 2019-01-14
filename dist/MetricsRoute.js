@@ -17,7 +17,7 @@ class MetricsRoute {
      */
     postProcess(evt, resp, handlingRoutes) {
         const path = MetricsRouteUtils_1.getPathForMetricsLogging(evt, handlingRoutes);
-        const code = resp.statusCode || resp.body ? 200 : 0;
+        const code = resp.statusCode ? resp.statusCode : resp.body ? 200 : 0;
         const auth = evt.meta["auth"];
         let metricsLogString = `MONITORING|` +
             `${Math.round(Date.now() / 1000)}|` +

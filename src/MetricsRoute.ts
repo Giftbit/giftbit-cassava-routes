@@ -22,7 +22,7 @@ export class MetricsRoute implements cassava.routes.Route {
      */
     postProcess(evt: cassava.RouterEvent, resp: cassava.RouterResponse, handlingRoutes: Route[]): cassava.RouterResponse {
         const path: string = getPathForMetricsLogging(evt, handlingRoutes);
-        const code: number = resp.statusCode || resp.body ? 200 : 0;
+        const code: number = resp.statusCode ? resp.statusCode : resp.body ? 200 : 0;
 
         const auth = evt.meta["auth"] as AuthorizationBadge;
 
