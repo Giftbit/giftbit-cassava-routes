@@ -22,19 +22,20 @@ export class MetricsRoute implements cassava.routes.Route {
      */
     postProcess(evt: cassava.RouterEvent, resp: cassava.RouterResponse, handlingRoutes: Route[]): cassava.RouterResponse {
         const path: string = getPathForMetricsLogging(evt, handlingRoutes);
+        const code: number = resp.statusCode || resp.body ? 200 : 0;
 
         const auth = evt.meta["auth"] as AuthorizationBadge;
 
         let metricsLogString: string = `MONITORING|` +
             `${Math.round(Date.now() / 1000)}|` +
-            `${resp.statusCode || 0}|` +    // JwtAuthorizationRoute does not return response code
+            `${code}|` +
             `histogram|` +
             `response_codes|` +
             `#path:${path},` +
-            `#respCode:${resp.statusCode},` +
+            `#respCode:${code},` +
             `#httpMethod:${evt.httpMethod}`;
 
-        if (auth) { // HealthCheckRoute does not require auth
+        if (auth) {      // not all routes require auth
             metricsLogString += `,#liveMode:${!auth.isTestUser()},` +
                 `#userId:${auth.userId},` +
                 `#teamMemberId:${auth.teamMemberId}`;
