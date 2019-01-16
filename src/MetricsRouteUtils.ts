@@ -3,7 +3,7 @@ import {Route} from "cassava/dist/routes";
 export function getPathForMetricsLogging(evt: { path: string }, handlingRoutes: Route[]): string {
     let path: string = evt.path;
 
-    const handler = (handlingRoutes[0] as any);
+    const handler = (handlingRoutes[0] as any); // cast as any because settings is private on BuildableRoute
     if (handler && handler.settings && handler.settings.pathRegex) {
         let pathRegex: RegExp = handler.settings.pathRegex;
 
@@ -14,7 +14,7 @@ export function getPathForMetricsLogging(evt: { path: string }, handlingRoutes: 
             let pathParamIndex: number = 0;
 
             /**
-             * Replace each path parameter in the stringified path regex with the corresponding parm param identifier
+             * Replace each path parameter in the stringified path regex with the corresponding path param identifier
              *
              * For example: if evt.path is "/v2/programs/program-id-12345",`
              *      the matching regexp is /^\/v2\/programs\/([0-9a-zA-Z-._~!$&'()*+,;=:@%]+)$/

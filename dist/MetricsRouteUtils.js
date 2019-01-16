@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 function getPathForMetricsLogging(evt, handlingRoutes) {
     let path = evt.path;
-    const handler = handlingRoutes[0];
+    const handler = handlingRoutes[0]; // cast as any because settings is private on BuildableRoute
     if (handler && handler.settings && handler.settings.pathRegex) {
         let pathRegex = handler.settings.pathRegex;
         path = pathRegex.toString();
@@ -10,7 +10,7 @@ function getPathForMetricsLogging(evt, handlingRoutes) {
             let pathParams = handler.settings.regexGroupToPathParamMap;
             let pathParamIndex = 0;
             /**
-             * Replace each path parameter in the stringified path regex with the corresponding parm param identifier
+             * Replace each path parameter in the stringified path regex with the corresponding path param identifier
              *
              * For example: if evt.path is "/v2/programs/program-id-12345",`
              *      the matching regexp is /^\/v2\/programs\/([0-9a-zA-Z-._~!$&'()*+,;=:@%]+)$/
