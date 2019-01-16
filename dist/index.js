@@ -10,4 +10,6 @@ var GiftbitRestError_1 = require("./GiftbitRestError");
 exports.GiftbitRestError = GiftbitRestError_1.GiftbitRestError;
 var HealthCheckRoute_1 = require("./HealthCheckRoute");
 exports.HealthCheckRoute = HealthCheckRoute_1.HealthCheckRoute;
+var MetricsRoute_1 = require("./MetricsRoute");
+exports.MetricsRoute = MetricsRoute_1.MetricsRoute;
 //# sourceMappingURL=index.js.map
