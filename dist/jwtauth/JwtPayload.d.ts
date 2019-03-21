@@ -11,6 +11,7 @@ export interface JwtPayload {
         pid?: string;
         coi?: string;
         si?: string;
+        e?: string;
     };
     metadata?: {
         [name: string]: any;

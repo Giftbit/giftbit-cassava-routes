@@ -16,6 +16,7 @@ export class AuthorizationBadge {
     programId: string;
     contactId: string;
     serviceId: string;
+    email: string;
 
     metadata: {[name: string]: any};
 
@@ -50,6 +51,7 @@ export class AuthorizationBadge {
                 this.programId = jwtPayload.g.pid;
                 this.contactId = jwtPayload.g.coi;
                 this.serviceId = jwtPayload.g.si;
+                this.email = jwtPayload.g.e;
             }
             this.metadata = jwtPayload.metadata;
             this.audience = jwtPayload.aud;
@@ -102,6 +104,9 @@ export class AuthorizationBadge {
         }
         if (this.serviceId) {
             payload.g.si = this.serviceId;
+        }
+        if (this.email) {
+            payload.g.e = this.email;
         }
         if (this.metadata) {
             payload.metadata = this.metadata;
@@ -170,8 +175,8 @@ export class AuthorizationBadge {
      * Require that the given IDs are set on the badge.
      * eg: requireIds("userId", "merchantId");
      */
-    requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId")[]): void {
-        for (let id of ids) {
+    requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId" | "email")[]): void {
+        for (const id of ids) {
             if (!this[id]) {
                 this.errorLogFunction(`auth missing required id '${id}'`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);

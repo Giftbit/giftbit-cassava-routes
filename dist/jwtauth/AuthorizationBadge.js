@@ -26,6 +26,7 @@ class AuthorizationBadge {
                 this.programId = jwtPayload.g.pid;
                 this.contactId = jwtPayload.g.coi;
                 this.serviceId = jwtPayload.g.si;
+                this.email = jwtPayload.g.e;
             }
             this.metadata = jwtPayload.metadata;
             this.audience = jwtPayload.aud;
@@ -74,6 +75,9 @@ class AuthorizationBadge {
         }
         if (this.serviceId) {
             payload.g.si = this.serviceId;
+        }
+        if (this.email) {
+            payload.g.e = this.email;
         }
         if (this.metadata) {
             payload.metadata = this.metadata;
@@ -133,7 +137,7 @@ class AuthorizationBadge {
      * eg: requireIds("userId", "merchantId");
      */
     requireIds(...ids) {
-        for (let id of ids) {
+        for (const id of ids) {
             if (!this[id]) {
                 this.errorLogFunction(`auth missing required id '${id}'`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);

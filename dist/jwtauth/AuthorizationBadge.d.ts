@@ -11,6 +11,7 @@ export declare class AuthorizationBadge {
     programId: string;
     contactId: string;
     serviceId: string;
+    email: string;
     metadata: {
         [name: string]: any;
     };
@@ -35,7 +36,7 @@ export declare class AuthorizationBadge {
      * Require that the given IDs are set on the badge.
      * eg: requireIds("userId", "merchantId");
      */
-    requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId")[]): void;
+    requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId" | "email")[]): void;
     /**
      * Returns true if this badge contains the given scope or any parent of the scope.
      */

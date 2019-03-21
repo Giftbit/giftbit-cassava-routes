@@ -356,7 +356,8 @@ describe("AuthorizationBadge", () => {
             const originalPayload: JwtPayload = {
                 "g": {
                     "gui": "user-7052210bcb94448b825ffa68508d29ad-TEST",
-                    "gmi": "user-7052210bcb94448b825ffa68508d29ad-TEST"
+                    "gmi": "user-7052210bcb94448b825ffa68508d29ad-TEST",
+                    "e": "user@example.com"
                 },
                 "iat": 1488911646.603,
                 "jti": "badge-dd95b9b582e840ecba1cbf41365d57e1",
