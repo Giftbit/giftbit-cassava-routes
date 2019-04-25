@@ -12,36 +12,43 @@ const s3 = new aws.S3({
     region: region
 });
 
-export const logErrors: boolean = true;
+export interface FetchFromS3Options {
+    errorLogger?: (...args: any) => void;
+    maxAttempts?: number;
+}
 
-export async function fetchFromS3<T>(bucket: string, key: string): Promise<T> {
+export async function fetchFromS3<T>(bucket: string, key: string, options?: FetchFromS3Options): Promise<T> {
     let retryWait = 100;
-    while (true) {
+    const errorLogger = (options && options.errorLogger) || console.log.bind(console);
+    const maxAttempts = (options && options.maxAttempts) || Number.POSITIVE_INFINITY;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
-            logErrors && console.log(`Fetching secure config item ${bucket}/${key}.`);
+            errorLogger(`Fetching secure config item ${bucket}/${key}.`);
             const resp = await s3.getObject({
                 Bucket: bucket,
                 Key: key
             }).promise();
             return JSON.parse(resp.Body.toString());
         } catch (error) {
-            logErrors && console.error(`Could not retrieve config from ${bucket}/${key}`, error);
-            logErrors && console.log(`Retrying in ${retryWait}ms`);
+            errorLogger(`Could not retrieve config from ${bucket}/${key}`, error);
+            errorLogger(`Retrying in ${retryWait}ms`);
             await new Promise(resolve => setTimeout(resolve, retryWait));
             retryWait = Math.min(retryWait * 2, 10000);
         }
     }
+    throw new Error("Could not fetch secure config item.  Max attempts reached.");
 }
 
-export async function fetchFromS3ByEnvVar<T>(bucketEnvVar: string, keyEnvVar: string): Promise<T> {
+export async function fetchFromS3ByEnvVar<T>(bucketEnvVar: string, keyEnvVar: string, options?: FetchFromS3Options): Promise<T> {
+    const errorLogger = (options && options.errorLogger) || console.log.bind(console);
     if (!process || !process.env[bucketEnvVar]) {
-        logErrors && console.error(`${bucketEnvVar} is not set.  The secure config item cannot be fetched.`);
+        errorLogger(`${bucketEnvVar} is not set.  The secure config item cannot be fetched.`);
         return null;
     }
     if (!process || !process.env[keyEnvVar]) {
-        logErrors && console.error(`${keyEnvVar} is not set.  The secure config item cannot be fetched.`);
+        errorLogger(`${keyEnvVar} is not set.  The secure config item cannot be fetched.`);
         return null;
     }
 
-    return await fetchFromS3<T>(process.env[bucketEnvVar], process.env[keyEnvVar]);
+    return await fetchFromS3<T>(process.env[bucketEnvVar], process.env[keyEnvVar], options);
 }
