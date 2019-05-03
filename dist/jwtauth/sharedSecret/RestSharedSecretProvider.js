@@ -23,7 +23,12 @@ class RestSharedSecretProvider {
             const storageTokenConfig = yield this.assumeGetSharedSecretToken;
             const resp = yield superagent("GET", this.sharedSecretUri)
                 .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
-                .set("AuthorizeAs", tokenPayload);
+                .set("AuthorizeAs", tokenPayload)
+                .timeout({
+                response: 3000,
+                deadline: 6000
+            })
+                .retry(3);
             return resp.body;
         });
     }
