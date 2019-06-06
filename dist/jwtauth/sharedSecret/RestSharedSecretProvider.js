@@ -25,7 +25,8 @@ class RestSharedSecretProvider {
                 .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
                 .set("AuthorizeAs", tokenPayload)
                 .timeout({
-                response: 3000,
+                // When things are healthy our P99 latency is between 2 and 4 seconds.
+                response: 4000,
                 deadline: 6000
             })
                 .retry(3);
