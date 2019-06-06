@@ -2,6 +2,7 @@ import * as aws from "aws-sdk";
 export {AuthenticationConfig} from "./AuthenticationConfig";
 export {RolesConfig} from "./RolesConfig";
 export {AssumeScopeToken} from "./AssumeScopeToken";
+export {StripeConfig} from "./StripeConfig";
 
 const region = process.env["AWS_REGION"] || "";
 const creds = new aws.EnvironmentCredentials("AWS");

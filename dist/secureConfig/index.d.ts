@@ -1,6 +1,7 @@
 export { AuthenticationConfig } from "./AuthenticationConfig";
 export { RolesConfig } from "./RolesConfig";
 export { AssumeScopeToken } from "./AssumeScopeToken";
+export { StripeConfig } from "./StripeConfig";
 export interface FetchFromS3Options {
     errorLogger?: (...args: any) => void;
     maxAttempts?: number;
