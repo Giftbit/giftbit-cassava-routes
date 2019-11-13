@@ -117,7 +117,7 @@ class AuthorizationBadge {
     assumeJwtIdentity(jwtPayload) {
         this.requireScopes("ASSUME");
         const j = this.getJwtPayload();
-        j.g = Object.assign({}, jwtPayload.g, { si: this.userId });
+        j.g = Object.assign(Object.assign({}, jwtPayload.g), { si: this.userId });
         j.parentJti = jwtPayload.jti;
         const badge = new AuthorizationBadge(j, {
             rolesConfig: this.rolesConfig,
