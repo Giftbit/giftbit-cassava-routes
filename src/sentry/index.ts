@@ -53,7 +53,6 @@ export function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any,
             ...options.additionalTags
         });
         Sentry.setExtras(ctx);
-        Sentry.setExtra("request", evt);
 
         try {
             const result = await handler(evt, ctx);
