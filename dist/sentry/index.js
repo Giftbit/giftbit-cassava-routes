@@ -9,19 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Raven = require("raven");
-let onInitialized;
-let onInitializedFailed;
-const initializedPromise = new Promise((resolve, reject) => {
-    onInitialized = resolve;
-    onInitializedFailed = reject;
-});
-const sentryPromises = [];
+const Sentry = require("@sentry/node");
 let logger = console.error.bind(console);
-let ravenContext = {
-    tags: {},
-    extra: {}
-};
+let sentryInitPromise;
+const sentryPromises = [];
 /**
  * Create a handler function that wraps the given handler and initializes Sentry.
  * @param options
@@ -31,45 +22,46 @@ function wrapLambdaHandler(options) {
     if (options.logger) {
         logger = options.logger;
     }
+    else {
+        logger = console.error.bind(console);
+    }
+    if (!sentryInitPromise) {
+        // Sentry is only initialized once under the assumption the credentials won't change.
+        sentryInitPromise = (() => __awaiter(this, void 0, void 0, function* () {
+            const secureConfig = yield options.secureConfig;
+            Sentry.init({
+                dsn: secureConfig.apiKey,
+                onFatalError: error => logger("FATAL ERROR", error)
+            });
+        }))().catch(error => logger("Error initializing Sentry", error));
+    }
     if (!options.router && !options.handler) {
-        logger("Must specify one of router or handler.");
+        logger("Cannot wrap lambda handler: must specify one of router or handler.");
         throw new Error("Must specify one of router or handler.");
     }
     if (options.router) {
         options.router.errorHandler = sendErrorNotification;
     }
     const handler = options.handler || options.router.getLambdaHandler();
-    installApiKey(options).then(onInitialized, onInitializedFailed);
     return (evt, ctx) => __awaiter(this, void 0, void 0, function* () {
-        ravenContext.tags = Object.assign(Object.assign({}, getDefaultTags(evt, ctx)), options.additionalTags);
-        ravenContext.extra = ctx;
-        const result = yield handler(evt, ctx);
-        if (sentryPromises.length) {
-            // Wait for any workers sending errors to Sentry for up to 3 seconds.
-            // Any errors not sent to Sentry before the Lambda returns may never get sent.
-            try {
-                yield Promise.race([Promise.all(sentryPromises), new Promise(resolve => setTimeout(resolve, 3000))]);
-            }
-            catch (err) {
-                logger("error awaiting sentry promises", err);
-            }
-            sentryPromises.length = 0;
+        Sentry.setTags(Object.assign(Object.assign({}, getDefaultTags(evt, ctx)), options.additionalTags));
+        Sentry.setExtras(ctx);
+        Sentry.setExtra("request", evt);
+        try {
+            const result = yield handler(evt, ctx);
+            yield flushSentry(ctx);
+            return Promise.resolve(result);
         }
-        return Promise.resolve(result);
+        catch (err) {
+            sendErrorNotification(err);
+            yield flushSentry(ctx);
+            throw err;
+        }
     });
 }
 exports.wrapLambdaHandler = wrapLambdaHandler;
-function installApiKey(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const secureConfig = yield options.secureConfig;
-        if (!secureConfig.apiKey) {
-            throw new Error("Sentry not initialized. Sentry API key object missing `apiKey` member.");
-        }
-        Raven.config(secureConfig.apiKey).install();
-    });
-}
 function getDefaultTags(evt, ctx) {
-    let tags = {
+    const tags = {
         functionname: ctx.functionName,
         region: process.env["AWS_REGION"]
     };
@@ -79,6 +71,32 @@ function getDefaultTags(evt, ctx) {
     }
     return tags;
 }
+function flushSentry(ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (sentryPromises.length) {
+            // Wait for any workers sending errors to Sentry.
+            // Any errors not sent to Sentry before the Lambda returns may never get sent.
+            try {
+                yield Promise.race([
+                    Promise.all(sentryPromises),
+                    new Promise(resolve => setTimeout(resolve, Math.min(3000, ctx.getRemainingTimeInMillis() - 3200)))
+                ]);
+                if (!(yield Sentry.flush(Math.min(3000, ctx.getRemainingTimeInMillis() - 200)))) {
+                    logger("Flushing Sentry error timed out");
+                }
+            }
+            catch (err) {
+                logger("Error awaiting sentry promises", err);
+            }
+            sentryPromises.length = 0;
+        }
+        Sentry.setUser(null);
+    });
+}
+function setSentryUser(user) {
+    Sentry.setUser(user);
+}
+exports.setSentryUser = setSentryUser;
 /**
  * Send an error notification to Sentry.
  */
@@ -89,18 +107,8 @@ exports.sendErrorNotification = sendErrorNotification;
 function sendErrorNotificationImpl(err) {
     return __awaiter(this, void 0, void 0, function* () {
         logger(err);
-        yield initializedPromise;
-        return new Promise(((resolve, reject) => {
-            Raven.captureException(err, ravenContext, (ravenError) => {
-                if (ravenError) {
-                    logger("error sending to Sentry", ravenError);
-                    reject(ravenError);
-                }
-                else {
-                    resolve();
-                }
-            });
-        }));
+        yield sentryInitPromise;
+        Sentry.captureException(err);
     });
 }
 //# sourceMappingURL=index.js.map

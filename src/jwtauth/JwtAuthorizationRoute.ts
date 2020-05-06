@@ -12,6 +12,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
     private readonly infoLogFunction?: (...msg: any[]) => void = console.log.bind(console);
     private readonly errorLogFunction?: (...msg: any[]) => void = console.error.bind(console);
+    private readonly onAuth?: (auth: AuthorizationBadge | null) => void;
     private readonly authConfigPromise: Promise<AuthenticationConfig>;
     private readonly rolesConfigPromise?: Promise<RolesConfig>;
     private readonly sharedSecretProvider: SharedSecretProvider;
@@ -19,6 +20,7 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
     constructor(private readonly options: JwtAuthorizationRouteOptions) {
         this.infoLogFunction = options.infoLogFunction || this.infoLogFunction;
         this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
+        this.onAuth = options.onAuth;
         this.authConfigPromise = options.authConfigPromise;
         this.rolesConfigPromise = options.rolesConfigPromise;
         this.sharedSecretProvider = options.sharedSecretProvider;
@@ -34,9 +36,12 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
 
             const authAs = this.getAuthorizeAsHeaderValue(evt);
             if (authAs) {
-                evt.meta["auth"] = auth.assumeJwtIdentity(authAs);
+                const authAssumingAuthAs = auth.assumeJwtIdentity(authAs);
+                evt.meta["auth"] = authAssumingAuthAs;
+                this.safeCallOnAuth(authAssumingAuthAs);
             } else {
                 evt.meta["auth"] = auth;
+                this.safeCallOnAuth(auth);
             }
 
             evt.meta["auth-token"] = token;
@@ -45,9 +50,18 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
             this.infoLogFunction("JWT authorized", auth);
         } catch (e) {
             this.errorLogFunction("error verifying jwt", e);
+            this.safeCallOnAuth(null);
             throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
         }
         return null;
+    }
+
+    private safeCallOnAuth(auth: AuthorizationBadge | null): void {
+        if (this.onAuth) {
+            try {
+                this.onAuth(auth);
+            } catch (ignored) {}
+        }
     }
 
     async postProcess(evt: cassava.RouterEvent, resp: cassava.RouterResponse): Promise<cassava.RouterResponse> {
