@@ -1,18 +1,15 @@
 import * as awslambda from "aws-lambda";
 import * as cassava from "cassava";
-import {SentryConfig} from "./SentryConfig";
 import Sentry = require("@sentry/node");
 
 let logger: (...msg: any[]) => void = console.error.bind(console);
-let sentryInitPromise: Promise<void>;
-const sentryPromises: Promise<void>[] = [];
 
 export interface WrapLambdaHandlerOptions {
     additionalTags?: { [key: string]: string };
     handler?: (evt: any, ctx: awslambda.Context) => Promise<any>;
     logger?: (error: Error | string) => void;
     router?: cassava.Router;
-    secureConfig: Promise<SentryConfig> | SentryConfig;
+    sentryDsn: string;
 }
 
 /**
@@ -27,16 +24,9 @@ export function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any,
         logger = console.error.bind(console);
     }
 
-    if (!sentryInitPromise) {
-        // Sentry is only initialized once under the assumption the credentials won't change.
-        sentryInitPromise = (async () => {
-            const secureConfig = await options.secureConfig;
-            Sentry.init({
-                dsn: secureConfig.apiKey,
-                onFatalError: error => logger("FATAL ERROR", error)
-            });
-        })().catch(error => logger("Error initializing Sentry", error));
-    }
+    Sentry.init({
+        dsn: options.sentryDsn
+    });
 
     if (!options.router && !options.handler) {
         logger("Cannot wrap lambda handler: must specify one of router or handler.");
@@ -81,30 +71,14 @@ function getDefaultTags(evt: any, ctx: awslambda.Context): any {
 }
 
 async function flushSentry(ctx: awslambda.Context): Promise<void> {
-    if (sentryPromises.length) {
-        // Wait for any workers sending errors to Sentry.
-        // Any errors not sent to Sentry before the Lambda returns may never get sent.
-        try {
-            // How long to wait for Sentry promises.
-            const sentryPromiseTimeoutMillis = 3000;
+    // How long to wait for Sentry to flush events.
+    const flushTimeoutMillis = 3000;
 
-            // How long to wait for Sentry to flush events.
-            const flushTimeoutMillis = 3000;
+    // How much time to leave for the rest of lambda execution.
+    const finishResponseBufferMillis = 50;
 
-            // How much time to leave for the rest of lambda execution.
-            const finishResponseBufferMillis = 50;
-
-            await Promise.race([
-                Promise.all(sentryPromises),
-                new Promise(resolve => setTimeout(resolve, Math.min(sentryPromiseTimeoutMillis, ctx.getRemainingTimeInMillis() - flushTimeoutMillis - finishResponseBufferMillis)))
-            ]);
-            if (!await Sentry.flush(Math.min(flushTimeoutMillis, ctx.getRemainingTimeInMillis() - finishResponseBufferMillis))) {
-                logger("Flushing Sentry error timed out");
-            }
-        } catch (err) {
-            logger("Error awaiting sentry promises", err);
-        }
-        sentryPromises.length = 0;
+    if (!await Sentry.flush(Math.min(flushTimeoutMillis, ctx.getRemainingTimeInMillis() - finishResponseBufferMillis))) {
+        logger("Flushing Sentry timed out");
     }
     Sentry.setUser(null);
 }
@@ -117,11 +91,6 @@ export function setSentryUser(user: { [key: string]: any } | null): void {
  * Send an error notification to Sentry.
  */
 export function sendErrorNotification(err: Error): void {
-    sentryPromises.push(sendErrorNotificationImpl(err));
-}
-
-async function sendErrorNotificationImpl(err: Error): Promise<void> {
     logger(err);
-    await sentryInitPromise;
     Sentry.captureException(err);
 }
