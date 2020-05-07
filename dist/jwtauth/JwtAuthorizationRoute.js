@@ -20,6 +20,7 @@ class JwtAuthorizationRoute {
         this.errorLogFunction = console.error.bind(console);
         this.infoLogFunction = options.infoLogFunction || this.infoLogFunction;
         this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
+        this.onAuth = options.onAuth;
         this.authConfigPromise = options.authConfigPromise;
         this.rolesConfigPromise = options.rolesConfigPromise;
         this.sharedSecretProvider = options.sharedSecretProvider;
@@ -33,10 +34,13 @@ class JwtAuthorizationRoute {
                 const authHeader = new AuthorizationHeader_1.AuthorizationHeader(authHeaderPayload);
                 const authAs = this.getAuthorizeAsHeaderValue(evt);
                 if (authAs) {
-                    evt.meta["auth"] = auth.assumeJwtIdentity(authAs);
+                    const authAssumingAuthAs = auth.assumeJwtIdentity(authAs);
+                    evt.meta["auth"] = authAssumingAuthAs;
+                    this.safeCallOnAuth(authAssumingAuthAs);
                 }
                 else {
                     evt.meta["auth"] = auth;
+                    this.safeCallOnAuth(auth);
                 }
                 evt.meta["auth-token"] = token;
                 evt.meta["auth-header"] = authHeader;
@@ -44,10 +48,19 @@ class JwtAuthorizationRoute {
             }
             catch (e) {
                 this.errorLogFunction("error verifying jwt", e);
+                this.safeCallOnAuth(null);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.UNAUTHORIZED);
             }
             return null;
         });
+    }
+    safeCallOnAuth(auth) {
+        if (this.onAuth) {
+            try {
+                this.onAuth(auth);
+            }
+            catch (ignored) { }
+        }
     }
     postProcess(evt, resp) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -16,6 +16,9 @@ export interface WrapLambdaHandlerOptions {
  * @returns a Lambda handler
  */
 export declare function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any, ctx: awslambda.Context) => Promise<any>;
+export declare function setSentryUser(user: {
+    [key: string]: any;
+} | null): void;
 /**
  * Send an error notification to Sentry.
  */

@@ -14,7 +14,7 @@ describe("JwtAuthorizationRoute", () => {
         handle: async evt => ({body: {}})
     };
 
-    it("verifies a valid JWT in the Authorization header", async() => {
+    it("verifies a valid JWT in the Authorization header", async () => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
@@ -54,7 +54,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.isTrue(secondHandlerCalled);
     });
 
-    it("verifies a valid JWT in cookies when X-Requested-With is present", async() => {
+    it("verifies a valid JWT in cookies when X-Requested-With is present", async () => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
@@ -89,7 +89,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.isTrue(secondHandlerCalled);
     });
 
-    it("verifies a valid JWT in cookies when x-requested-with header is lower case", async() => {
+    it("verifies a valid JWT in cookies when x-requested-with header is lower case", async () => {
         let secondHandlerCalled = false;
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
@@ -124,7 +124,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.isTrue(secondHandlerCalled);
     });
 
-    it("verifies a JWT with a date string iat", async() => {
+    it("verifies a JWT with a date string iat", async () => {
         // The spec calls for timestamps but we were issuing JWTs with date strings for a while.
         // We'll still accept these technically-wrong JWTs.
 
@@ -146,7 +146,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
     });
 
-    it("verifies a JWT with a timestamp exp", async() => {
+    it("verifies a JWT with a timestamp exp", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -165,7 +165,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
     });
 
-    it("rejects a JWT with a date string exp", async() => {
+    it("rejects a JWT with a date string exp", async () => {
         // We won't be permissive about JWTs with date string expiration because they were
         // never issued in practice.
 
@@ -187,7 +187,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects an Authorization header missing 'Bearer '", async() => {
+    it("rejects an Authorization header missing 'Bearer '", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise: Promise.resolve({secretkey:"secret"}),
@@ -207,7 +207,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects a JWT that is not base64", async() => {
+    it("rejects a JWT that is not base64", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -227,7 +227,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects an expired JWT", async() => {
+    it("rejects an expired JWT", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -246,7 +246,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects a JWT with a bad signature in the Authorization header", async() => {
+    it("rejects a JWT with a bad signature in the Authorization header", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -266,7 +266,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects a JWT with a bad signature in cookies", async() => {
+    it("rejects a JWT with a bad signature in cookies", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -286,7 +286,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects a JWT in cookies missing the X-Requested-With header", async() => {
+    it("rejects a JWT in cookies missing the X-Requested-With header", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -306,7 +306,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects a JWT in cookies with the X-Requested-With header value the wrong case", async() => {
+    it("rejects a JWT in cookies with the X-Requested-With header value the wrong case", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -327,7 +327,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects a JWT in cookies missing gb_jwt_session", async() => {
+    it("rejects a JWT in cookies missing gb_jwt_session", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -347,7 +347,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects a JWT in cookies missing gb_jwt_signature", async() => {
+    it("rejects a JWT in cookies missing gb_jwt_signature", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -368,7 +368,7 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
 
-    it("rejects a JWT with alg:none", async() => {
+    it("rejects a JWT with alg:none", async () => {
         const router = new cassava.Router();
         const jwtAuthorizationRoute = new JwtAuthorizationRoute({
             authConfigPromise,
@@ -387,9 +387,65 @@ describe("JwtAuthorizationRoute", () => {
         chai.assert.isObject(resp);
         chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
     });
+    
+    describe("onAuth", () => {
+        it("is called with the AuthorizationBadge on success", async () => {
+            let onAuthCalled = false;
+            let onAuthVal: AuthorizationBadge = null;
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+                authConfigPromise,
+                infoLogFunction: memoryHoleLogger,
+                errorLogFunction: memoryHoleLogger,
+                onAuth: auth => {
+                    onAuthCalled = true;
+                    onAuthVal = auth;
+                }
+            });
+            router.route(jwtAuthorizationRoute);
+            router.route(happyRoute);
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoiMjAxNi0xMi0xMlQyMDoxMTo0MC4wMDBaIiwic2NvcGVzIjpbIkMiLCJUIiwiUiIsIkNFQyIsIkNFUiIsIlVBIiwiRiJdfQ.p2w1R5kBfh6PAzkMWulvf-6Y8BhZx9o5gBOlc8rNlOk"
+                }
+            }));
+
+            chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
+            chai.assert.isTrue(onAuthCalled);
+            chai.assert.isNotNull(onAuthCalled);
+        });
+
+        it("is called with null on failure", async () => {
+            let onAuthCalled = false;
+            let onAuthVal: AuthorizationBadge = null;
+            const router = new cassava.Router();
+            const jwtAuthorizationRoute = new JwtAuthorizationRoute({
+                authConfigPromise,
+                infoLogFunction: memoryHoleLogger,
+                errorLogFunction: memoryHoleLogger,
+                onAuth: auth => {
+                    onAuthCalled = true;
+                    onAuthVal = auth;
+                }
+            });
+            router.route(jwtAuthorizationRoute);
+
+            const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
+                headers: {
+                    Authorization: "this is not a valid JWT"
+                }
+            }));
+
+            chai.assert.isObject(resp);
+            chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
+            chai.assert.isTrue(onAuthCalled);
+            chai.assert.isNull(onAuthVal);
+        });
+    });
 
     describe("assume support", () => {
-        it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload 1", async() => {
+        it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload 1", async () => {
             let secondHandlerCalled = false;
             const router = new cassava.Router();
             const jwtAuthorizationRoute = new JwtAuthorizationRoute({
@@ -426,7 +482,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.isTrue(secondHandlerCalled);
         });
 
-        it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload 2", async() => {
+        it("validates the JWT with ASSUME scope then assumes the AuthorizeAs payload 2", async () => {
             let secondHandlerCalled = false;
             const router = new cassava.Router();
             const jwtAuthorizationRoute = new JwtAuthorizationRoute({
@@ -462,7 +518,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.isTrue(secondHandlerCalled);
         });
 
-        it("rejects an expired JWT", async() => {
+        it("rejects an expired JWT", async () => {
             const router = new cassava.Router();
             const jwtAuthorizationRoute = new JwtAuthorizationRoute({
                 authConfigPromise,
@@ -483,7 +539,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
         });
 
-        it("rejects a JWT without ASSUME scope", async() => {
+        it("rejects a JWT without ASSUME scope", async () => {
             const router = new cassava.Router();
             const jwtAuthorizationRoute = new JwtAuthorizationRoute({
                 authConfigPromise,
@@ -519,7 +575,7 @@ describe("JwtAuthorizationRoute", () => {
             });
         });
 
-        it("verifies a valid merchant JWT", async() => {
+        it("verifies a valid merchant JWT", async () => {
             let secondHandlerCalled = false;
             router.route(jwtAuthorizationRoute);
             router.route({
@@ -549,7 +605,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.isTrue(secondHandlerCalled);
         });
 
-        it("verifies a valid merchant JWT without escalating scopes or roles", async() => {
+        it("verifies a valid merchant JWT without escalating scopes or roles", async () => {
             let secondHandlerCalled = false;
             router.route(jwtAuthorizationRoute);
             router.route({
@@ -579,7 +635,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.isTrue(secondHandlerCalled);
         });
 
-        it("verifies a valid merchant JWT with metadata", async() => {
+        it("verifies a valid merchant JWT with metadata", async () => {
             let secondHandlerCalled = false;
             router.route(jwtAuthorizationRoute);
             router.route({
@@ -610,7 +666,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.isTrue(secondHandlerCalled);
         });
 
-        it("rejects a JWT with a bad signature in the Authorization header", async() => {
+        it("rejects a JWT with a bad signature in the Authorization header", async () => {
             (jwtAuthorizationRoute as any).sharedSecretProvider = new StaticSharedSecretProvider("someDifferentSecret");
             router.route(jwtAuthorizationRoute);
             router.route(happyRoute);
@@ -625,7 +681,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
         });
 
-        it("rejects a JWT with alg:none", async() => {
+        it("rejects a JWT with alg:none", async () => {
             router.route(jwtAuthorizationRoute);
             router.route(happyRoute);
 
@@ -639,7 +695,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
         });
 
-        it("rejects an expired JWT", async() => {
+        it("rejects an expired JWT", async () => {
             router.route(jwtAuthorizationRoute);
 
             const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
@@ -652,7 +708,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.equal(resp.statusCode, 401, JSON.stringify(resp));
         });
 
-        it("verifies a valid merchant JWT again", async() => {
+        it("verifies a valid merchant JWT again", async () => {
             let secondHandlerCalled = false;
             router.route(jwtAuthorizationRoute);
             router.route({
