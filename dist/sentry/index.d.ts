@@ -1,6 +1,5 @@
 import * as awslambda from "aws-lambda";
 import * as cassava from "cassava";
-import { SentryConfig } from "./SentryConfig";
 export interface WrapLambdaHandlerOptions {
     additionalTags?: {
         [key: string]: string;
@@ -8,7 +7,7 @@ export interface WrapLambdaHandlerOptions {
     handler?: (evt: any, ctx: awslambda.Context) => Promise<any>;
     logger?: (error: Error | string) => void;
     router?: cassava.Router;
-    secureConfig: Promise<SentryConfig> | SentryConfig;
+    sentryDsn: string;
 }
 /**
  * Create a handler function that wraps the given handler and initializes Sentry.
