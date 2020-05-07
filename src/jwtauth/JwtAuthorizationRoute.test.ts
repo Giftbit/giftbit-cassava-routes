@@ -433,7 +433,7 @@ describe("JwtAuthorizationRoute", () => {
 
             const resp = await cassava.testing.testRouter(router, cassava.testing.createTestProxyEvent("/foo/bar", "GET", {
                 headers: {
-                    Authorization: "Bearer eyJ2ZXIiOjEsInZhdiI6MSwiYWxnIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJnIjp7Imd1aSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQtVEVTVCIsImdtaSI6InVzZXItNzA1MjIxMGJjYjk0NDQ4YjgyNWZmYTY4NTA4ZDI5YWQifSwiaWF0IjoxNDgxNTczNTAwLCJleHAiOjE0ODE1NzM1MDAsInNjb3BlcyI6WyJDIiwiVCIsIlIiLCJDRUMiLCJDRVIiLCJVQSIsIkYiXX0.zuwm1-TTXp6b3X7TG-mJun4YSyRut1sJTpxH5q6NJzQ"
+                    Authorization: "this is not a valid JWT"
                 }
             }));
 

@@ -85,11 +85,20 @@ async function flushSentry(ctx: awslambda.Context): Promise<void> {
         // Wait for any workers sending errors to Sentry.
         // Any errors not sent to Sentry before the Lambda returns may never get sent.
         try {
+            // How long to wait for Sentry promises.
+            const sentryPromiseTimeoutMillis = 3000;
+
+            // How long to wait for Sentry to flush events.
+            const flushTimeoutMillis = 3000;
+
+            // How much time to leave for the rest of lambda execution.
+            const finishResponseBufferMillis = 50;
+
             await Promise.race([
                 Promise.all(sentryPromises),
-                new Promise(resolve => setTimeout(resolve, Math.min(3000, ctx.getRemainingTimeInMillis() - 3200)))
+                new Promise(resolve => setTimeout(resolve, Math.min(sentryPromiseTimeoutMillis, ctx.getRemainingTimeInMillis() - flushTimeoutMillis - finishResponseBufferMillis)))
             ]);
-            if (!await Sentry.flush(Math.min(3000, ctx.getRemainingTimeInMillis() - 200))) {
+            if (!await Sentry.flush(Math.min(flushTimeoutMillis, ctx.getRemainingTimeInMillis() - finishResponseBufferMillis))) {
                 logger("Flushing Sentry error timed out");
             }
         } catch (err) {
