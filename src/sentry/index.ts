@@ -29,7 +29,7 @@ export function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any,
 
     Sentry.init({
         dsn: options.sentryDsn,
-        ignoreErrors: options.filtersOptions.ignoreErrors
+        ignoreErrors: options.filtersOptions?.ignoreErrors
     });
 
     if (!options.router && !options.handler) {
