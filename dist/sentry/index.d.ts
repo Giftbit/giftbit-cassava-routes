@@ -8,6 +8,9 @@ export interface WrapLambdaHandlerOptions {
     logger?: (error: Error | string) => void;
     router?: cassava.Router;
     sentryDsn: string;
+    filtersOptions?: {
+        ignoreErrors?: Array<string | RegExp>;
+    };
 }
 /**
  * Create a handler function that wraps the given handler and initializes Sentry.
