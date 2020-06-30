@@ -414,6 +414,7 @@ describe("JwtAuthorizationRoute", () => {
             chai.assert.equal(resp.statusCode, 200, JSON.stringify(resp));
             chai.assert.isTrue(onAuthCalled);
             chai.assert.isNotNull(onAuthCalled);
+            chai.assert.equal(onAuthVal.userId, "user-7052210bcb94448b825ffa68508d29ad-TEST");
         });
 
         it("is called with null on failure", async () => {
@@ -741,7 +742,7 @@ describe("JwtAuthorizationRoute", () => {
 
     describe("logging", () => {
         it("logs the verified auth but *not* the signature", async () => {
-            let logs: string = "";
+            let logs = "";
 
             const router = new cassava.Router();
             const jwtAuthorizationRoute = new JwtAuthorizationRoute({

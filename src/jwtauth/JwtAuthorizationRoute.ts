@@ -10,7 +10,9 @@ import {JwtAuthorizationRouteOptions} from "./JwtAuthorizationRouteOptions";
 
 export class JwtAuthorizationRoute implements cassava.routes.Route {
 
+    // eslint-disable-next-line no-console
     private readonly infoLogFunction?: (...msg: any[]) => void = console.log.bind(console);
+    // eslint-disable-next-line no-console
     private readonly errorLogFunction?: (...msg: any[]) => void = console.error.bind(console);
     private readonly onAuth?: (auth: AuthorizationBadge | null) => void;
     private readonly authConfigPromise: Promise<AuthenticationConfig>;
@@ -60,7 +62,9 @@ export class JwtAuthorizationRoute implements cassava.routes.Route {
         if (this.onAuth) {
             try {
                 this.onAuth(auth);
-            } catch (ignored) {}
+            } catch (err) {
+                this.errorLogFunction(`Error calling onAuth(), ${err}`);
+            }
         }
     }
 
