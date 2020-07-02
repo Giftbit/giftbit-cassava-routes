@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RestSharedSecretProvider = void 0;
 const superagent = require("superagent");
 class RestSharedSecretProvider {
     constructor(sharedSecretUri, assumeGetSharedSecretToken) {
@@ -26,8 +27,8 @@ class RestSharedSecretProvider {
                 .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
                 .set("AuthorizeAs", tokenPayload)
                 .timeout({
-                // When things are healthy our P99 latency is between 2 and 4 seconds.
-                response: 4000,
+                // When things are healthy our P99 latency is between 0.5 and 1.5 seconds.
+                response: 3000,
                 deadline: 6000
             })
                 .retry(3);

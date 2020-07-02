@@ -20,6 +20,7 @@ export interface FetchFromS3Options {
 
 export async function fetchFromS3<T>(bucket: string, key: string, options?: FetchFromS3Options): Promise<T> {
     let retryWait = 100;
+    // eslint-disable-next-line no-console
     const errorLogger = (options && options.errorLogger) || console.log.bind(console);
     const maxAttempts = (options && options.maxAttempts) || Number.POSITIVE_INFINITY;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -41,6 +42,7 @@ export async function fetchFromS3<T>(bucket: string, key: string, options?: Fetc
 }
 
 export async function fetchFromS3ByEnvVar<T>(bucketEnvVar: string, keyEnvVar: string, options?: FetchFromS3Options): Promise<T> {
+    // eslint-disable-next-line no-console
     const errorLogger = (options && options.errorLogger) || console.log.bind(console);
     if (!process || !process.env[bucketEnvVar]) {
         errorLogger(`${bucketEnvVar} is not set.  The secure config item cannot be fetched.`);

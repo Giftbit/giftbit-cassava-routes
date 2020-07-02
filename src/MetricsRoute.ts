@@ -50,6 +50,7 @@ export class MetricsRoute implements cassava.routes.Route {
         if (this.options.logFunction) {
             this.options.logFunction(msg);
         } else {
+            // eslint-disable-next-line no-console
             console.log(msg);
         }
     }

@@ -1,13 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getPathForMetricsLogging = void 0;
 function getPathForMetricsLogging(evt, handlingRoutes) {
     let path = evt.path;
     const handler = handlingRoutes[0]; // cast as any because settings is private on BuildableRoute
     if (handler && handler.settings && handler.settings.pathRegex) {
-        let pathRegex = handler.settings.pathRegex;
+        const pathRegex = handler.settings.pathRegex;
         path = pathRegex.toString();
         if (handler.settings.regexGroupToPathParamMap) {
-            let pathParams = handler.settings.regexGroupToPathParamMap;
+            const pathParams = handler.settings.regexGroupToPathParamMap;
             let pathParamIndex = 0;
             /**
              * Replace each path parameter in the stringified path regex with the corresponding path param identifier

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.JwtPayload = void 0;
 var JwtPayload;
 (function (JwtPayload) {
     function isTestUser(payload) {

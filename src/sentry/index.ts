@@ -2,6 +2,7 @@ import * as awslambda from "aws-lambda";
 import * as cassava from "cassava";
 import Sentry = require("@sentry/node");
 
+// eslint-disable-next-line no-console
 let logger: (...msg: any[]) => void = console.error.bind(console);
 
 export interface WrapLambdaHandlerOptions {
@@ -24,6 +25,7 @@ export function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any,
     if (options.logger) {
         logger = options.logger;
     } else {
+        // eslint-disable-next-line no-console
         logger = console.error.bind(console);
     }
 

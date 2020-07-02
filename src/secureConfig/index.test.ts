@@ -77,7 +77,7 @@ describe("secureConfig", () => {
         it("respects maxAttempts", async () => {
             const value = {a: "alpha"};
 
-            const stub = sandbox.stub(aws.S3.prototype, "makeRequest")
+            sandbox.stub(aws.S3.prototype, "makeRequest")
                 .onFirstCall()
                 .callsFake((operation: string, params: {Bucket: string, Key: string})  => {
                     chai.assert.equal(params.Bucket, "hat");

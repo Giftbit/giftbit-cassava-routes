@@ -5,13 +5,13 @@ export function getPathForMetricsLogging(evt: { path: string }, handlingRoutes: 
 
     const handler = (handlingRoutes[0] as any); // cast as any because settings is private on BuildableRoute
     if (handler && handler.settings && handler.settings.pathRegex) {
-        let pathRegex: RegExp = handler.settings.pathRegex;
+        const pathRegex: RegExp = handler.settings.pathRegex;
 
         path = pathRegex.toString();
 
         if (handler.settings.regexGroupToPathParamMap) {
-            let pathParams: string[] = handler.settings.regexGroupToPathParamMap;
-            let pathParamIndex: number = 0;
+            const pathParams: string[] = handler.settings.regexGroupToPathParamMap;
+            let pathParamIndex = 0;
 
             /**
              * Replace each path parameter in the stringified path regex with the corresponding path param identifier

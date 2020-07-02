@@ -31,14 +31,18 @@ export class AuthorizationBadge {
     effectiveScopes: string[] = [];
 
     private readonly rolesConfig: RolesConfig;
+
+    // eslint-disable-next-line no-console
     private readonly infoLogFunction?: (...msg: any[]) => void = console.log.bind(console);
+    
+    // eslint-disable-next-line no-console
     private readonly errorLogFunction?: (...msg: any[]) => void = console.error.bind(console);
 
     constructor(jwtPayload?: JwtPayload, options?: AuthorizationBadgeOptions) {
         if (options) {
             this.rolesConfig = options.rolesConfig;
-            this.infoLogFunction = options.infoLogFunction || this.infoLogFunction;
-            this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
+            this.infoLogFunction = options.infoLogFunction ?? this.infoLogFunction;
+            this.errorLogFunction = options.errorLogFunction ?? this.errorLogFunction;
         }
 
         if (jwtPayload) {
@@ -171,7 +175,7 @@ export class AuthorizationBadge {
      * eg: requireIds("userId", "merchantId");
      */
     requireIds(...ids: ("userId" | "teamMemberId" | "merchantId" | "valueId" | "programId" | "contactId" | "serviceId")[]): void {
-        for (let id of ids) {
+        for (const id of ids) {
             if (!this[id]) {
                 this.errorLogFunction(`auth missing required id '${id}'`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
@@ -195,7 +199,7 @@ export class AuthorizationBadge {
      * Returns true if the badge has all the given scopes.
      */
     hasScopes(...scopes: string[]): boolean {
-        for (let scope of scopes) {
+        for (const scope of scopes) {
             if (!this.hasScope(scope)) {
                 return false;
             }
@@ -208,7 +212,7 @@ export class AuthorizationBadge {
      * Throws a RestError if they are not.
      */
     requireScopes(...scopes: string[]): void {
-        for (let scope of scopes) {
+        for (const scope of scopes) {
             if (!this.hasScope(scope)) {
                 this.errorLogFunction(`auth missing required scope '${scope}'`);
                 throw new cassava.RestError(cassava.httpStatusCode.clientError.FORBIDDEN);
@@ -235,7 +239,7 @@ export class AuthorizationBadge {
             this.roles.forEach(roleName => {
                 const roleConfig = this.rolesConfig.roles.find(roleConfig => roleConfig.name === roleName);
                 if (!roleConfig) {
-                    console.log(`JWT ${this.uniqueIdentifier} contains an unknown role ${roleName}`);
+                    this.errorLogFunction(`JWT ${this.uniqueIdentifier} contains an unknown role ${roleName}`);
                     return;
                 }
 

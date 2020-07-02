@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.StaticSharedSecretProvider = void 0;
 class StaticSharedSecretProvider {
     constructor(key) {
         this.key = key;

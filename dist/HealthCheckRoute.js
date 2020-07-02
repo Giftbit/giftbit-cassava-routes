@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HealthCheckRoute = void 0;
 class HealthCheckRoute {
     /**
      * @param path Exact path to respond on.
