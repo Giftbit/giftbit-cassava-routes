@@ -19,6 +19,7 @@ let logger = console.error.bind(console);
  * @returns a Lambda handler
  */
 function wrapLambdaHandler(options) {
+    var _a;
     if (options.logger) {
         logger = options.logger;
     }
@@ -27,7 +28,8 @@ function wrapLambdaHandler(options) {
         logger = console.error.bind(console);
     }
     Sentry.init({
-        dsn: options.sentryDsn
+        dsn: options.sentryDsn,
+        ignoreErrors: (_a = options.filtersOptions) === null || _a === void 0 ? void 0 : _a.ignoreErrors
     });
     if (!options.router && !options.handler) {
         logger("Cannot wrap lambda handler: must specify one of router or handler.");

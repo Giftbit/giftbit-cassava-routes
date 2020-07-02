@@ -11,6 +11,9 @@ export interface WrapLambdaHandlerOptions {
     logger?: (error: Error | string) => void;
     router?: cassava.Router;
     sentryDsn: string;
+    filtersOptions?: {
+        ignoreErrors?: Array<string | RegExp>;
+    };
 }
 
 /**
@@ -27,7 +30,8 @@ export function wrapLambdaHandler(options: WrapLambdaHandlerOptions): (evt: any,
     }
 
     Sentry.init({
-        dsn: options.sentryDsn
+        dsn: options.sentryDsn,
+        ignoreErrors: options.filtersOptions?.ignoreErrors
     });
 
     if (!options.router && !options.handler) {
