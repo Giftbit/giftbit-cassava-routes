@@ -20,8 +20,8 @@ export class RestSharedSecretProvider implements SharedSecretProvider {
             .set("Authorization", `Bearer ${storageTokenConfig.assumeToken}`)
             .set("AuthorizeAs", tokenPayload)
             .timeout({
-                // When things are healthy our P99 latency is between 2 and 4 seconds.
-                response: 4000,
+                // When things are healthy our P99 latency is between 0.5 and 1.5 seconds.
+                response: 3000,
                 deadline: 6000
             })
             .retry(3);
