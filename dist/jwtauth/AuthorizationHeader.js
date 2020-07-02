@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthorizationHeader = void 0;
 /**
  * Expanded representation of the JWT header.
  */

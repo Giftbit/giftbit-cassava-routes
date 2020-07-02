@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.fetchFromS3ByEnvVar = exports.fetchFromS3 = void 0;
 const aws = require("aws-sdk");
 const region = process.env["AWS_REGION"] || "";
 const creds = new aws.EnvironmentCredentials("AWS");
@@ -21,6 +22,7 @@ const s3 = new aws.S3({
 function fetchFromS3(bucket, key, options) {
     return __awaiter(this, void 0, void 0, function* () {
         let retryWait = 100;
+        // eslint-disable-next-line no-console
         const errorLogger = (options && options.errorLogger) || console.log.bind(console);
         const maxAttempts = (options && options.maxAttempts) || Number.POSITIVE_INFINITY;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -45,6 +47,7 @@ function fetchFromS3(bucket, key, options) {
 exports.fetchFromS3 = fetchFromS3;
 function fetchFromS3ByEnvVar(bucketEnvVar, keyEnvVar, options) {
     return __awaiter(this, void 0, void 0, function* () {
+        // eslint-disable-next-line no-console
         const errorLogger = (options && options.errorLogger) || console.log.bind(console);
         if (!process || !process.env[bucketEnvVar]) {
             errorLogger(`${bucketEnvVar} is not set.  The secure config item cannot be fetched.`);

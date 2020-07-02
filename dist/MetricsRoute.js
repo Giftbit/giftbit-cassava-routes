@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MetricsRoute = void 0;
 const MetricsRouteUtils_1 = require("./MetricsRouteUtils");
 class MetricsRoute {
     constructor(options) {
@@ -40,6 +41,7 @@ class MetricsRoute {
             this.options.logFunction(msg);
         }
         else {
+            // eslint-disable-next-line no-console
             console.log(msg);
         }
     }

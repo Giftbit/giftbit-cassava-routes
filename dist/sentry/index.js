@@ -9,7 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sendErrorNotification = exports.setSentryUser = exports.wrapLambdaHandler = void 0;
 const Sentry = require("@sentry/node");
+// eslint-disable-next-line no-console
 let logger = console.error.bind(console);
 /**
  * Create a handler function that wraps the given handler and initializes Sentry.
@@ -21,6 +23,7 @@ function wrapLambdaHandler(options) {
         logger = options.logger;
     }
     else {
+        // eslint-disable-next-line no-console
         logger = console.error.bind(console);
     }
     Sentry.init({

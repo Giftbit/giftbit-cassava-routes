@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.JwtAuthorizationRoute = void 0;
 const cassava = require("cassava");
 const jwt = require("jsonwebtoken");
 const AuthorizationBadge_1 = require("./AuthorizationBadge");
@@ -16,7 +17,9 @@ const AuthorizationHeader_1 = require("./AuthorizationHeader");
 class JwtAuthorizationRoute {
     constructor(options) {
         this.options = options;
+        // eslint-disable-next-line no-console
         this.infoLogFunction = console.log.bind(console);
+        // eslint-disable-next-line no-console
         this.errorLogFunction = console.error.bind(console);
         this.infoLogFunction = options.infoLogFunction || this.infoLogFunction;
         this.errorLogFunction = options.errorLogFunction || this.errorLogFunction;
@@ -59,7 +62,9 @@ class JwtAuthorizationRoute {
             try {
                 this.onAuth(auth);
             }
-            catch (ignored) { }
+            catch (err) {
+                this.errorLogFunction(`Error calling onAuth(), ${err}`);
+            }
         }
     }
     postProcess(evt, resp) {

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.GiftbitRestError = void 0;
 const cassava = require("cassava");
 /**
  * A strongly-typed wrapped around cassava.RestError that standardizes our `messageCode` convention.
