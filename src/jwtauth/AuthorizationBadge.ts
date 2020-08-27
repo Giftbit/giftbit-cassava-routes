@@ -130,7 +130,7 @@ export class AuthorizationBadge {
             payload.iat = this.issuedAtTime.getTime() / 1000;
         }
         if (this.expirationTime) {
-            payload.exp = this.expirationTime.getTime();
+            payload.exp = this.expirationTime.getTime() / 1000;
         }
         return payload;
     }

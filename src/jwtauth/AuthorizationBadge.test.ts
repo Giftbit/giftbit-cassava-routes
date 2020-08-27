@@ -259,6 +259,40 @@ describe("AuthorizationBadge", () => {
             chai.assert.deepStrictEqual(newJwt, jwt);
         });
 
+        it("returns the correct expiration", () => {
+            const jwt: Partial<JwtPayload> = {
+                "g": {
+                    "gui": "user-7e38007e430245258e0d390760df7b91-TEST",
+                    "tmi": "user-7e38007e430245258e0d390760df7b91-TEST"
+                },
+                "aud": "WEBAPP",
+                "iss": "EDHI",
+                "roles": [
+                    "promoter",
+                    "reporter",
+                    "teamAdmin",
+                    "webPortal",
+                    "pointOfSale",
+                    "accountManager",
+                    "contactManager",
+                    "programManager",
+                    "securityManager",
+                    "customerServiceManager",
+                    "customerServiceRepresentative",
+                    "self"
+                ],
+                "scopes": [],
+                "iat": 1598546759.733,
+                "exp": 1598557559.733
+            };
+
+            const auth = new AuthorizationBadge(jwt);
+            const newJwt = auth.getJwtPayload();
+
+            chai.assert.notEqual(newJwt, jwt);
+            chai.assert.deepStrictEqual(newJwt, jwt);
+        });
+
         it("returns a number iat even when constructed with a string date iat", () => {
             const jwt: Partial<JwtPayload> = {
                 "g": {
