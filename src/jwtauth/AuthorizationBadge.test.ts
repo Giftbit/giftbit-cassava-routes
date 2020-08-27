@@ -256,7 +256,7 @@ describe("AuthorizationBadge", () => {
             const newJwt = auth.getJwtPayload();
 
             chai.assert.notEqual(newJwt, jwt);
-            chai.assert.deepEqual(newJwt, jwt);
+            chai.assert.deepStrictEqual(newJwt, jwt);
         });
 
         it("returns a number iat even when constructed with a string date iat", () => {
