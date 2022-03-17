@@ -17,7 +17,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "private": true,
   "bugs": {
     "url": "https://github.com/Giftbit/giftbit-cassava/issues"
